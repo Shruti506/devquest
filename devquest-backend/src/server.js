@@ -1,8 +1,9 @@
 const dotenv = require('dotenv')
 const express = require('express')
 const mongoose = require('mongoose')
-const authRoutes = require('./routes/auth-routes')
+const authRoutes = require('./routes/authRoutes')
 const cors = require('cors')
+const questRoutes = require('./routes/questRoutes')
 
 dotenv.config()
 const app = express()
@@ -25,6 +26,7 @@ app.use((req, res, next) => {
 
 //routes
 app.use('/api/auth', authRoutes)
+app.use('/api/quests', questRoutes)
 
 // connect to db
 mongoose
