@@ -1,0 +1,281 @@
+@import 'tailwindcss/preflight';
+@import 'tailwindcss/utilities';
+
+/* your custom CSS */
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+/* Optional: your theme variables */
+@layer base {
+  :root {
+    --color-background: var(--background);
+    --color-foreground: var(--foreground);
+    --font-sans: var(--font-geist-sans);
+    --font-mono: var(--font-geist-mono);
+  }
+}
+
+@theme inline {
+  --breakpoint-xs: 390px;
+  --breakpoint-hd: 1920px;
+  --breakpoint-3xl: 2000px;
+}
+@theme inline {
+  /* Base colors */
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-neon-fuchsia: rgb(255, 100, 203, 1);
+  --color-orangey-yellow: rgb(255, 184, 24, 1);
+  --color-gold-drop: rgba(255, 119, 22, 1);
+  --color-purple-pink: rgba(198, 64, 255, 1);
+  --color-aqua-marine: rgba(21, 217, 161, 1);
+  --color-neutralColor: var(--neutralColor);
+  --color-silkBlue: var(--silkBlue);
+  --color-blue-chalk: var(--blue-chalk);
+  --color-gunmetal: var(--gunmetal);
+  --color-riverBed: var(--riverBed);
+  --color-ceruleanBlue: var(--ceruleanBlue);
+  --color-darkMintGreen: var(--darkMintGreen);
+  --color-blackpearl: var(--blackpearl);
+  --color-lavenderMist: var(--lavenderMist);
+  --color-mariner: var(--mariner);
+  --color-lightGrey: var(--lightGrey);
+  --color-borderColor: var(--borderColor);
+  --color-rangoon: var(--rangoon);
+  --color-darkSlateGrey: var(--darkSlateGrey);
+  --color-rihano: var(--rihano);
+  --color-marine: var(--marine);
+  --color-desertstorm: var(--desertstorm);
+  --color-midnight: var(--midnight);
+  --color-mistBlue: var(--mistBlue);
+  --color-desertlight: var(--desertlight);
+  --color-darkJungleGreen: var(--darkJungleGreen);
+  --color-mountainMist: var(--mountainMist);
+  --color-midgrey: var(--midgrey);
+  --color-porcelain: var(--porcelain);
+  --color-torchred: var(--torchred);
+  --color-magnolia: var(--magnolia);
+  --color-tropicalBlue: var(--tropicalBlue);
+  --color-gamboge: var(--gamboge);
+  --color-middlegrey: var(--middlegrey);
+  --color-dawnpink: var(--dawnpink);
+  --color-lightningyellow: var(--lightningyellow);
+  --color-mustardbrown: var(--mustardbrown);
+  --color-ligting-yellow: var(--ligting-yellow);
+  --color-blackperl: var(--blackpearl);
+  --color-pinkrose: var(--pinkrose);
+  --color-dark-orange: var(--dark-orange);
+  --color-aqua-blue: var(--aqua-blue);
+  --color-eagle: var(--eagle);
+  --color-cobalt-blue: var(--cobalt-blue);
+  --color-violet-red: var(--violet-red);
+  --color-dull-yellow: var(--dull-yellow);
+  --color-aqua-marine: var(--aqua-marine);
+  --color-iron: var(--iron);
+  --color-blue-chalk: var(--blue-chalk);
+  --color-magnolia: var(--magnolia);
+  --color-blue-koi: var(--blue-koi);
+  --color-darkmustard: var(--darkmustard);
+  --color-sandstorm: var(--sandstorm);
+  --color-mercury: var(--mercury);
+  --color-softblue: var(--softblue);
+  /* Fonts */
+  --font-instrument: 'Instrument Sans', sans-serif;
+  --font-jakarta: 'Plus Jakarta Sans', sans-serif;
+  --font-circular: 'Circular Std', sans-serif;
+
+  --my-3-75: 15px;
+  --my-1-5: 6px;
+  --my-2-25: 9px;
+  --my-2-5: 10px;
+  --my-3-5: 14px;
+  --my-2-75: 11px;
+  --my-3-25: 13px;
+  --my-3-75: 15px;
+  --my-7-5: 30px;
+  --my-4: 16px;
+  --my-4-5: 18px;
+  --my-5: 20px;
+  --my-5-25: 21px;
+  --my-6-25: 25px;
+  --my-6-5: 26px;
+  --my-4-5: 18px;
+  --my-5-5: 22px;
+  --my-8-5: 34px;
+  --my-7: 28px;
+  --my-12-5: 50px;
+  --my-15: 60px;
+  --my-13: 52px;
+  --my-13-5: 54px;
+  --my-17-5: 70px;
+  --my-25: 100px;
+  --my-8: 32px;
+  --my-10-5: 42px;
+  --my-13-5: 54px;
+  --my-14: 56px;
+  --my-19: 76px;
+  --my-20: 80px;
+  --my-21: 84px;
+  --my-22: 88px;
+  --my-22-5: 90px;
+  --my-23: 92px;
+  --my-30: 120px;
+  --my-37-5: 150px;
+  --my-40: 160px;
+  --my-50: 200px;
+  --my-60: 240px;
+  --my-64: 256px;
+  --my-90: 360px;
+  --my-120: 480px;
+  --my-128: 512px;
+  --my-160: 640px;
+}
+
+:root {
+  --font-instrument: 'Instrument Sans', sans-serif;
+  --font-jakarta: 'Plus Jakarta Sans', sans-serif;
+  --font-circular: 'Circular Std', sans-serif;
+  --radius: 8px;
+
+  --my-2-25: 9px;
+  --my-3-75: 15px;
+  --my-3-5: 14px;
+  --my-1-5: 6px;
+  --my-2-5: 10px;
+  --my-3-25: 13px;
+  --my-4-5: 18px;
+  --my-4: 16px;
+  --my-7-5: 30px;
+  --my-2-75: 11px;
+  --my-3-75: 15px;
+  --my-5-25: 21px;
+  --my-6-5: 26px;
+  --my-6-25: 25px;
+  --my-4-5: 18px;
+  --my-5: 20px;
+  --my-5-5: 22px;
+  --my-7: 28px;
+  --my-7-5: 30px;
+  --my-8-5: 34px;
+  --my-12-5: 50px;
+  --my-7: 28px;
+  --my-13: 52px;
+  --my-13-5: 54px;
+  --my-15: 60px;
+  --my-25: 100px;
+  --my-8: 32px;
+  --my-10-5: 42px;
+  --my-13-5: 54px;
+  --my-14: 56px;
+  --my-17-5: 70px;
+  --my-19: 76px;
+  --my-20: 80px;
+  --my-21: 84px;
+  --my-22: 88px;
+  --my-22-5: 90px;
+  --my-23: 92px;
+  --my-30: 120px;
+  --my-37-5: 150px;
+  --my-40: 160px;
+  --my-50: 200px;
+  --my-60: 240px;
+  --my-64: 256px;
+  --my-90: 360px;
+  --my-120: 480px;
+  --my-128: 512px;
+  --my-160: 640px;
+
+  /* Fonts */
+  --font-instrument: 'Instrument Sans', sans-serif;
+  --font-jakarta: 'Plus Jakarta Sans', sans-serif;
+  --font-circular: 'Circular Std', sans-serif;
+
+  /* Colors (RGB values) */
+  --neutralColor: #2d333e;
+  --blue-chalk: #e7edf9;
+  --riverBed: #434d56;
+  --ceruleanBlue: #2457b7;
+  --darkMintGreen: #2cbd53;
+  --mariner: #366ed7;
+  --borderColor: #dddfe2;
+  --rangoon: #18191b;
+  --desertstorm: #f7f8f8;
+  --darkJungleGreen: rgb(31, 46, 46);
+  --mountainMist: #95989d;
+  --porcelain: #f0f2f4;
+  --torchred: #ff113c;
+  --pinkrose: #ff90bc;
+  --neon-fuchsia: #ff64cb;
+  --orangey-yellow: #ffb818;
+  --gold-drop: #ff7716;
+  --purple-pink: #c640ff;
+  --aqua-marine: #15d9a1;
+  --ligting-yellow: #fbbf24;
+  --blackperl: #060f1f;
+  --dark-orange: #e59f00;
+  --aqua-blue: #1ecef4;
+  --eagle: #a0c49d;
+  --cobalt-blue: #003cd8;
+  --violet-red: #a3006d;
+  --dull-yellow: #ffd747;
+  --iron: #ccdaf5;
+  --aqua-marine: #15d9a1;
+  --blue-chalk: #e7edf9;
+  --magnolia: #f3f6fc;
+  --blue-koi: #6e96e3;
+  --mercury: #dce7f9;
+  --softblue: #4285f4;
+  --darkmustard: #b27c00;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  *::-webkit-scrollbar {
+    display: none;
+  }
+
+  *::-webkit-scrollbar {
+    display: none;
+  }
+
+  body {
+    @apply bg-background text-foreground max-w-[1920px] mx-auto;
+  }
+
+  h1,
+  h2,
+  h3,
+  button,
+  div,
+  li {
+    font-family: 'Plus Jakarta Sans';
+  }
+
+  p,
+  span,
+  a,
+  input,
+  option {
+    font-family: 'Instrument Sans';
+  }
+}
