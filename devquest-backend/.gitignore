@@ -1,11 +1,49 @@
+# === Node dependencies ===
 node_modules/
+
+# === Logs ===
+logs/
+*.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
+
+# === Environment variables ===
 .env
+.env.*
+!.env.example
+
+# === OS / Editor files ===
 .DS_Store
-logs/
-*.log
+Thumbs.db
+.vscode/
+.idea/
 
+# === Build & temp files ===
+dist/
+build/
+tmp/
+temp/
 
+# === Runtime & cache ===
+*.pid
+*.seed
+*.pid.lock
+.cache/
+coverage/
+.nyc_output/
+
+# === TypeScript (if added later) ===
+*.tsbuildinfo
+
+# === Database / local data ===
+data/
+*.db
+*.sqlite
+
+# === Secrets / keys ===
+secrets.json
+private.key
+public.key
+jwt-secret.txt
