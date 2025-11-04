@@ -14,6 +14,7 @@ const QuestSchema = new Schema(
     status: { type: String, enum: ['Unsolved', 'Solved'], default: 'Unsolved' },
     createdBy: { type: Schema.Types.ObjectId, ref: 'User' },
     updatedBy: { type: Schema.Types.ObjectId, ref: 'User' },
+    completedBy: [{ type: Schema.Types.ObjectId, ref: 'User' }],
   },
   { timestamps: true },
 )

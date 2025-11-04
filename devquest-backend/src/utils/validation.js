@@ -44,6 +44,29 @@ const listValidators = [
   query('sort').optional().isIn(['newest', 'xp', '-xp']),
 ]
 
+const parsePagination = (query) => {
+  const page = Math.max(parseInt(query.page, 10) || 1, 1)
+  const limitRaw = Math.max(parseInt(query.limit, 10) || 50, 1)
+  const limit = Math.min(limitRaw, 50)
+  const skip = (page - 1) * limit
+  return { page, limit, skip }
+}
+
+const getDateRange = (scope) => {
+  const now = new Date()
+  if (scope === 'weekly') {
+    const start = new Date(now)
+    start.setDate(now.getDate() - 7)
+    return { start, end: now }
+  }
+  if (scope === 'monthly') {
+    const start = new Date(now)
+    start.setMonth(now.getMonth() - 1)
+    return { start, end: now }
+  }
+  return null // global
+}
+
 module.exports = {
   registerValidators,
   loginValidators,
@@ -51,4 +74,6 @@ module.exports = {
   updateValidators,
   idValidator,
   listValidators,
+  parsePagination,
+  getDateRange,
 }

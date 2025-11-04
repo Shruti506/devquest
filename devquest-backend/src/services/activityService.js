@@ -31,4 +31,17 @@ const logActivity = async (arg1, type, description, metadata) => {
   }
 }
 
-module.exports = { logActivity }
+async function getUserActivities(userId, { limit = 20, skip = 0 } = {}) {
+  const lim = Math.min(Math.max(parseInt(limit, 10) || 20, 1), 100)
+  const sk = Math.max(parseInt(skip, 10) || 0, 0)
+  const [items, total] = await Promise.all([
+    ActivityLog.find({ user: userId })
+      .sort({ createdAt: -1 })
+      .skip(sk)
+      .limit(lim),
+    ActivityLog.countDocuments({ user: userId }),
+  ])
+  return { items, total }
+}
+
+module.exports = { logActivity, getUserActivities }
