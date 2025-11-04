@@ -24,6 +24,12 @@ const completeQuest = async (req, res) => {
     const quest = await Quest.findById(questId)
     if (!quest) return res.status(404).json({ message: 'Quest not found' })
 
+    if (quest.createdBy.toString() === req.user._id.toString()) {
+      return res.status(403).json({
+        message: 'You cannot complete a quest that you created.',
+      })
+    }
+
     // Already completed by this user?
     const alreadyCompleted =
       Array.isArray(quest.completedBy) &&
@@ -34,7 +40,7 @@ const completeQuest = async (req, res) => {
 
     // Add completion
     quest.completedBy.push(req.user._id)
-    quest.status = quest.status
+    quest.status = 'Solved'
     await quest.save()
 
     // Update user progress
@@ -75,7 +81,6 @@ const completeQuest = async (req, res) => {
       newBadges,
     })
   } catch (error) {
-    console.log('🚀 ~ completeQuest ~ error:', error)
     return res.status(500).json({ message: 'Failed to complete quest' })
   }
 }
@@ -88,6 +93,7 @@ const getUserProgress = async (req, res) => {
     const completedCount = Array.isArray(user.completedQuests)
       ? user.completedQuests.length
       : 0
+
     // Completion rate placeholder: if we want total quests, compute against total available
     const totalQuests = await Quest.countDocuments()
     const completionRate =
@@ -126,7 +132,6 @@ const getActivityLog = async (req, res) => {
       },
     })
   } catch (error) {
-    console.log('🚀 ~ getActivityLog ~ error:', error)
     return res.status(500).json({ message: 'Failed to fetch activity log' })
   }
 }

@@ -1,0 +1,191 @@
+const mongoose = require('mongoose')
+const User = require('../models/User')
+const { parsePagination, getDateRange } = require('../utils/validation')
+
+const getLeaderboard = async (req, res) => {
+  try {
+    const scope = (req.query.scope || 'global').toLowerCase()
+    const { page, limit, skip } = parsePagination(req.query)
+
+    // ===== 🌍 GLOBAL LEADERBOARD =====
+    if (scope === 'global') {
+      const pipeline = [
+        {
+          $addFields: {
+            badgesCount: { $size: { $ifNull: ['$badges', []] } },
+            completedQuestsCount: {
+              $size: { $ifNull: ['$completedQuests', []] },
+            },
+          },
+        },
+        {
+          $setWindowFields: {
+            sortBy: { xp: -1 }, // rank based on XP descending
+            output: { rank: { $rank: {} } },
+          },
+        },
+        {
+          $project: {
+            _id: 1,
+            name: 1,
+            email: 1,
+            xp: 1,
+            level: 1,
+            badgesCount: 1,
+            completedQuestsCount: 1,
+            rank: 1,
+          },
+        },
+        { $sort: { rank: 1 } }, // ✅ top rank first
+        {
+          $facet: {
+            items: [{ $skip: skip }, { $limit: limit }],
+            total: [{ $count: 'count' }],
+          },
+        },
+      ]
+
+      const [result] = await User.aggregate(pipeline)
+      const items = result?.items || []
+      const total = result?.total?.[0]?.count || 0
+
+      return res.status(200).json({
+        items,
+        meta: {
+          page,
+          limit,
+          total,
+          totalPages: Math.ceil(total / limit),
+          scope,
+        },
+      })
+    }
+
+    // ===== ⏳ WEEKLY / MONTHLY LEADERBOARD =====
+    const range = getDateRange(scope)
+    if (!range) return res.status(400).json({ message: 'Invalid scope' })
+
+    const pipeline = [
+      {
+        $match: {
+          activityType: 'quest_completed',
+          createdAt: { $gte: range.start, $lte: range.end },
+        },
+      },
+      {
+        $group: {
+          _id: '$user',
+          earnedXp: { $sum: { $ifNull: ['$metadata.xp', 0] } },
+        },
+      },
+      {
+        $setWindowFields: {
+          sortBy: { earnedXp: -1 }, // rank by earned XP (desc)
+          output: { rank: { $rank: {} } },
+        },
+      },
+      {
+        $lookup: {
+          from: 'users',
+          localField: '_id',
+          foreignField: '_id',
+          as: 'user',
+        },
+      },
+      { $unwind: '$user' },
+      {
+        $addFields: {
+          userId: '$user._id',
+          name: '$user.name',
+          email: '$user.email',
+          xp: '$user.xp',
+          level: '$user.level',
+          badgesCount: { $size: { $ifNull: ['$user.badges', []] } },
+          completedQuestsCount: {
+            $size: { $ifNull: ['$user.completedQuests', []] },
+          },
+        },
+      },
+      {
+        $project: {
+          _id: 0,
+          userId: 1,
+          name: 1,
+          email: 1,
+          xp: 1,
+          level: 1,
+          earnedXp: 1,
+          badgesCount: 1,
+          completedQuestsCount: 1,
+          rank: 1,
+        },
+      },
+      { $sort: { rank: 1 } }, // ✅ highest rank on top
+      {
+        $facet: {
+          items: [{ $skip: skip }, { $limit: limit }],
+          total: [{ $count: 'count' }],
+        },
+      },
+    ]
+
+    const [result] = await ActivityLog.aggregate(pipeline)
+    const items = result?.items || []
+    const total = result?.total?.[0]?.count || 0
+
+    return res.status(200).json({
+      items,
+      meta: { page, limit, total, totalPages: Math.ceil(total / limit), scope },
+    })
+  } catch (error) {
+    return res.status(500).json({ message: 'Failed to fetch leaderboard' })
+  }
+}
+
+const getUserRank = async (req, res) => {
+  try {
+    const me = await User.findById(req.user._id)
+    if (!me) return res.status(404).json({ message: 'User not found' })
+
+    // Compute global rank: count users with xp > me.xp, add 1
+    const higherCount = await User.countDocuments({ xp: { $gt: me.xp } })
+    const rank = higherCount + 1
+
+    // Nearby users: 5 above (higher xp) and 5 below (lower xp)
+    const above = await User.find({ xp: { $gt: me.xp } })
+      .sort({ xp: 1, _id: 1 }) // ascending to take closest higher xps
+      .limit(5)
+      .lean()
+    const below = await User.find({ xp: { $lt: me.xp } })
+      .sort({ xp: -1, _id: 1 }) // descending for closest lower xps
+      .limit(5)
+      .lean()
+
+    // Project minimal fields with counts
+    function mapUser(u) {
+      return {
+        _id: u._id,
+        username: u.username,
+        xp: u.xp,
+        level: u.level,
+        badgesCount: Array.isArray(u.badges) ? u.badges.length : 0,
+        completedQuestsCount: Array.isArray(u.completedQuests)
+          ? u.completedQuests.length
+          : 0,
+      }
+    }
+
+    return res.status(200).json({
+      user: mapUser(me.toObject()),
+      rank,
+      nearby: {
+        above: above.map(mapUser).reverse(), // show highest rank first among above
+        below: below.map(mapUser),
+      },
+    })
+  } catch (error) {
+    return res.status(500).json({ message: 'Failed to fetch user rank' })
+  }
+}
+
+module.exports = { getLeaderboard, getUserRank }

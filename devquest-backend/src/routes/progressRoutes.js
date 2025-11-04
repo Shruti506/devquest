@@ -14,7 +14,9 @@ router.post(
   [param('questId').isMongoId()],
   completeQuest,
 )
+
 router.get('/my-progress', auth, getUserProgress)
+
 router.get(
   '/activity-log',
   auth,
