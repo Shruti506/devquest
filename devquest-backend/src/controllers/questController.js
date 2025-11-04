@@ -54,6 +54,8 @@ const getAllQuests = async (req, res) => {
     if (category) filter.category = category
     if (status) filter.status = status
 
+    filter.createdBy = { $ne: req.user._id }
+
     let sortSpec = { createdAt: -1 }
     if (sort === 'xp') sortSpec = { xpReward: 1 }
     if (sort === '-xp') sortSpec = { xpReward: -1 }

@@ -1,31 +1,50 @@
-import Link from 'next/link';
+import { redirect } from 'next/navigation'
+import { isServerAuthenticated } from '@/lib/auth'
+import Link from 'next/link'
+import { Button } from '@/components/ui/button'
+import FeatureCards from '@/components/FeatureCards'
 
-export default function HomePage() {
+export default async function HomePage() {
+  const authenticated = await isServerAuthenticated()
+
+  // Redirect authenticated users
+  if (authenticated) {
+    redirect('/dashboard')
+  }
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 flex items-center justify-center px-4">
-      <div className="text-center">
-        <h1 className="text-6xl font-bold text-white mb-6">
-          Welcome to DevQuest
-        </h1>
-        <p className="text-xl text-white/90 mb-12 max-w-2xl mx-auto">
-          Your journey to becoming a better developer starts here. Sign in or create an account to get started.
-        </p>
-        
-        <div className="flex flex-col sm:flex-row gap-4 justify-center">
-          <Link
-            href="/login"
-            className="px-8 py-4 bg-white text-purple-600 rounded-xl font-semibold text-lg hover:bg-gray-100 transition transform hover:scale-105"
-          >
-            Sign In
-          </Link>
-          <Link
-            href="/register"
-            className="px-8 py-4 bg-purple-600 text-white rounded-xl font-semibold text-lg hover:bg-purple-700 transition transform hover:scale-105 border-2 border-white"
-          >
-            Create Account
-          </Link>
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
+      <div className="container mx-auto px-4 py-16">
+        <div className="max-w-4xl mx-auto text-center">
+          <h1 className="text-5xl font-bold text-gray-900 mb-6">
+            Welcome to Secure Auth
+          </h1>
+          <p className="text-xl text-gray-600 mb-12">
+            A production-ready authentication system built with Next.js,
+            TypeScript, and Material-UI
+          </p>
+
+          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-16">
+            <Link href="/login">
+              <Button size="lg" className="w-full sm:w-auto px-8">
+                Sign In
+              </Button>
+            </Link>
+            <Link href="/register">
+              <Button
+                size="lg"
+                variant="outline"
+                className="w-full sm:w-auto px-8 bg-red-500"
+              >
+                Create Account
+              </Button>
+            </Link>
+          </div>
+
+          {/* Render client-side MUI cards */}
+          <FeatureCards />
         </div>
       </div>
     </div>
-  );
+  )
 }
