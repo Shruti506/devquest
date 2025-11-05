@@ -30,7 +30,6 @@ const completeQuest = async (req, res) => {
       })
     }
 
-    // Already completed by this user?
     const alreadyCompleted =
       Array.isArray(quest.completedBy) &&
       quest.completedBy.some((u) => u.toString() === req.user._id.toString())
@@ -38,12 +37,10 @@ const completeQuest = async (req, res) => {
       return res.status(400).json({ message: 'Quest already completed' })
     }
 
-    // Add completion
     quest.completedBy.push(req.user._id)
     quest.status = 'Solved'
     await quest.save()
 
-    // Update user progress
     const user = await User.findById(req.user._id)
     if (!user) return res.status(404).json({ message: 'User not found' })
 
@@ -53,14 +50,11 @@ const completeQuest = async (req, res) => {
 
     const updatedUser = await awardXP(user._id, quest.xpReward)
 
-    // Level-up check (calculate based on new xp)
     const newLevel = calculateLevel(updatedUser.xp)
     const leveledUp = newLevel > (user.level || 1)
 
-    // Badge milestones
     const newBadges = await checkAndAwardBadges(req.user._id)
 
-    // Log activities
     await logActivity(
       req.user._id,
       'quest_completed',
@@ -94,7 +88,6 @@ const getUserProgress = async (req, res) => {
       ? user.completedQuests.length
       : 0
 
-    // Completion rate placeholder: if we want total quests, compute against total available
     const totalQuests = await Quest.countDocuments()
     const completionRate =
       totalQuests > 0 ? +((completedCount / totalQuests) * 100).toFixed(2) : 0

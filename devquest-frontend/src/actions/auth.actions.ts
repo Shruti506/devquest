@@ -37,13 +37,11 @@ export async function loginAction(
       },
     )
 
-    // Store token in httpOnly cookie
     await setServerToken(response.data.token)
 
     return { success: true, message: 'Login successful' }
   } catch (error) {
     if (error instanceof Error && 'issues' in error) {
-      // Zod validation error
       const zodError = error as {
         issues: Array<{ path: string[]; message: string }>
       }

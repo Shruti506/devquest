@@ -6,22 +6,17 @@ import { FilterType } from '@/types/quest'
 interface QuestFiltersProps {
   activeFilter: FilterType
   onFilterChange: (filter: FilterType) => void
-  counts: {
-    all: number
-    solved: number
-    unsolved: number
-  }
 }
 
 export const QuestFilters = ({
   activeFilter,
   onFilterChange,
-  counts,
-}: QuestFiltersProps) => {
-  const filters: { label: FilterType; count: number }[] = [
-    { label: 'All', count: counts.all },
-    { label: 'Solved', count: counts.solved },
-    { label: 'Unsolved', count: counts.unsolved },
+}: // counts,
+QuestFiltersProps) => {
+  const filters: { label: FilterType }[] = [
+    { label: 'All' },
+    { label: 'Solved' },
+    { label: 'Unsolved' },
   ]
 
   return (
@@ -37,9 +32,6 @@ export const QuestFilters = ({
           }`}
         >
           {filter.label}
-          <span className="ml-2 text-xs bg-gray-100 px-2 py-0.5 rounded-full">
-            {filter.count}
-          </span>
         </button>
       ))}
     </div>

@@ -26,10 +26,8 @@ const getBadgeProgress = async (req, res) => {
     const user = await User.findById(req.user._id).populate('badges')
     if (!user) return res.status(404).json({ message: 'User not found' })
 
-    // Optionally auto-check and award any missed badges
     const newlyEarned = await checkAndAwardBadges(user._id)
 
-    // For progress display, compute simple stats
     const owned = new Set(user.badges.map((b) => b._id.toString()))
     const all = await getAllBadges()
     const progress = all.map((b) => ({

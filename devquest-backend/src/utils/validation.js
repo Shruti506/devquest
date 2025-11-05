@@ -1,7 +1,5 @@
 const { body, param, query } = require('express-validator')
 
-// Auth Validation
-
 const registerValidators = [
   body('name').isString().trim().isLength({ min: 3 }),
   body('email').isEmail().normalizeEmail(),
@@ -13,7 +11,6 @@ const loginValidators = [
   body('password').isString().isLength({ min: 6 }),
 ]
 
-// Quest validation
 
 const createValidators = [
   body('title').isString().trim().notEmpty(),

@@ -42,19 +42,25 @@ const getAllQuests = async (req, res) => {
       limit = 10,
       difficulty,
       category,
-      status,
-      sort = 'newest', // 'newest' | 'xp' | '-xp'
+      status = 'All',
+      sort = 'newest',
     } = req.query
 
     const pageNum = Math.max(parseInt(page, 10) || 1, 1)
     const limitNum = Math.min(Math.max(parseInt(limit, 10) || 10, 1), 100)
 
-    const filter = {}
+    const filter = {
+      createdBy: { $ne: req.user._id },
+    }
+
     if (difficulty) filter.difficulty = difficulty
     if (category) filter.category = category
-    if (status) filter.status = status
 
-    filter.createdBy = { $ne: req.user._id }
+    if (status && status !== 'All') {
+      if (status === 'Solved' || status === 'Unsolved') {
+        filter.status = status
+      }
+    }
 
     let sortSpec = { createdAt: -1 }
     if (sort === 'xp') sortSpec = { xpReward: 1 }
@@ -85,14 +91,56 @@ const getAllQuests = async (req, res) => {
 
 const getUserQuests = async (req, res) => {
   try {
-    const quests = await Quest.find({ createdBy: req.user._id }).sort({
-      createdAt: -1,
-    })
+    const {
+      page = 1,
+      limit = 10,
+      difficulty,
+      category,
+      status,
+      sort = 'newest',
+    } = req.query
+
+    const pageNum = Math.max(parseInt(page, 10) || 1, 1)
+    const limitNum = Math.min(Math.max(parseInt(limit, 10) || 10, 1), 100)
+
+    const filter = {
+      createdBy: req.user._id,
+    }
+
+    if (difficulty) filter.difficulty = difficulty
+    if (category) filter.category = category
+    if (status && status !== 'All') {
+      if (status === 'Solved' || status === 'Unsolved') {
+        filter.status = status
+      }
+    }
+
+    let sortSpec = { createdAt: -1 }
+    if (sort === 'xp') sortSpec = { xpReward: 1 }
+    if (sort === '-xp') sortSpec = { xpReward: -1 }
+
+    const [quests, total] = await Promise.all([
+      Quest.find(filter)
+        .sort(sortSpec)
+        .skip((pageNum - 1) * limitNum)
+        .limit(limitNum),
+      Quest.countDocuments(filter),
+    ])
+
     const items = quests.map((q) => ({
       ...q.toObject(),
       completionCount: Array.isArray(q.completedBy) ? q.completedBy.length : 0,
     }))
-    return res.status(200).json({ items, count: items.length })
+
+    return res.status(200).json({
+      items,
+      meta: {
+        page: pageNum,
+        limit: limitNum,
+        total,
+        totalPages: Math.ceil(total / limitNum),
+      },
+    })
   } catch (error) {
     return res.status(500).json({ message: 'Failed to fetch user quests' })
   }

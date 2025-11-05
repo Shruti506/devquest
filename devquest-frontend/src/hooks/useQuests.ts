@@ -1,22 +1,27 @@
 // src/hooks/useQuests.ts
 'use client'
 
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect } from 'react'
 import { questApi } from '@/lib/quest-api'
 import { Quest, QuestWithStatus, FilterType } from '@/types/quest'
 
 interface UseQuestsProps {
   userId: string | undefined
   token: string | undefined
+  mode?: 'all' | 'my'
 }
 
-export const useQuests = ({ userId, token }: UseQuestsProps) => {
+export const useQuests = ({ userId, token, mode = 'all' }: UseQuestsProps) => {
   const [quests, setQuests] = useState<Quest[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [filter, setFilter] = useState<FilterType>('All')
+
+  // Pagination states
   const [currentPage, setCurrentPage] = useState(1)
-  const itemsPerPage = 6
+  const [totalPages, setTotalPages] = useState(1)
+  const [totalQuests, setTotalQuests] = useState(0)
+  const itemsPerPage = 10
 
   const fetchQuests = async () => {
     if (!token) {
@@ -27,8 +32,20 @@ export const useQuests = ({ userId, token }: UseQuestsProps) => {
 
     try {
       setLoading(true)
-      const data = await questApi.getQuests(token)
+      let data
+
+      if (mode === 'my') {
+        data = await questApi.getMyQuests(token)
+      } else {
+        data = await questApi.getQuests(token, {
+          page: currentPage,
+          limit: itemsPerPage,
+        })
+      }
+
       setQuests(data.items || [])
+      setTotalPages(data.meta?.totalPages || 1)
+      setTotalQuests(data.meta?.total || 0)
       setError(null)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to fetch quests')
@@ -37,38 +54,28 @@ export const useQuests = ({ userId, token }: UseQuestsProps) => {
     }
   }
 
+  // Fetch when token or page changes
   useEffect(() => {
     fetchQuests()
-  }, [token])
+  }, [token, mode, currentPage])
 
-  // Transform quests with status
-  const questsWithStatus: QuestWithStatus[] = useMemo(() => {
-    return quests.map((quest) => ({
-      ...quest,
-      status: quest.completedBy.includes(userId || '') ? 'Solved' : 'Unsolved',
-    }))
-  }, [quests, userId])
-
-  // Filter quests
-  const filteredQuests = useMemo(() => {
-    if (filter === 'All') return questsWithStatus
-    return questsWithStatus.filter((quest) => quest.status === filter)
-  }, [questsWithStatus, filter])
-
-  // Paginate quests
-  const totalPages = Math.ceil(filteredQuests.length / itemsPerPage)
-  const paginatedQuests = useMemo(() => {
-    const startIndex = (currentPage - 1) * itemsPerPage
-    return filteredQuests.slice(startIndex, startIndex + itemsPerPage)
-  }, [filteredQuests, currentPage, itemsPerPage])
-
-  // Reset to page 1 when filter changes
+  // Reset page when filter changes
   useEffect(() => {
     setCurrentPage(1)
   }, [filter])
 
+  const questsWithStatus: QuestWithStatus[] = quests.map((quest) => ({
+    ...quest,
+    status: quest.completedBy.includes(userId || '') ? 'Solved' : 'Unsolved',
+  }))
+
+  const filteredQuests =
+    filter === 'All'
+      ? questsWithStatus
+      : questsWithStatus.filter((q) => q.status === filter)
+
   return {
-    quests: paginatedQuests,
+    quests: filteredQuests,
     allQuests: questsWithStatus,
     loading,
     error,
@@ -77,7 +84,7 @@ export const useQuests = ({ userId, token }: UseQuestsProps) => {
     currentPage,
     setCurrentPage,
     totalPages,
-    totalQuests: filteredQuests.length,
+    totalQuests,
     refetch: fetchQuests,
   }
 }
