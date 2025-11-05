@@ -10,14 +10,14 @@ export interface Quest {
   description: string
   difficulty: Difficulty
   xpReward: number
-  completedBy: string[] 
+  completedBy: string[]
   createdBy?: {
     name: string
     userId: string
   }
   createdAt?: string
   updatedAt?: string
-  status?: QuestStatus 
+  status?: QuestStatus
 }
 
 export interface QuestWithStatus extends Quest {
@@ -32,9 +32,15 @@ export interface CreateQuestDTO {
 
 export interface QuestApiResponse {
   items: Quest[]
-  total: number
-  page?: number
-  limit?: number
+  // total: number
+  // page?: number
+  // limit?: number
+  meta: {
+    page: number
+    limit: number
+    total: number
+    totalPages: number
+  }
 }
 
 export interface QuestDetailApiResponse {

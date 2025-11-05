@@ -107,13 +107,20 @@ const checkRequirement = async (user, badge) => {
 const checkAndAwardBadges = async (userId) => {
   const user = await User.findById(userId).populate('badges')
   if (!user) return []
-  const ownedIds = new Set((user.badges || []).map((b) => b._id.toString()))
+  const ownedIds = new Set(
+    (user.badges || [])
+      .map((b) => {
+        if (!b) return null
+        return b._id ? b._id.toString() : b.toString()
+      })
+      .filter(Boolean),
+  )
+
   const badges = await getAllBadges()
   const newlyEarned = []
 
   for (const badge of badges) {
     if (ownedIds.has(badge._id.toString())) continue
-    // eslint-disable-next-line no-await-in-loop
     const ok = await checkRequirement(user, badge)
     if (ok) {
       user.badges.push(badge._id)
@@ -124,7 +131,6 @@ const checkAndAwardBadges = async (userId) => {
   if (newlyEarned.length > 0) {
     await user.save()
     for (const badge of newlyEarned) {
-      // eslint-disable-next-line no-await-in-loop
       await logActivity(
         user._id,
         'badge_earned',

@@ -1,5 +1,4 @@
 const jwt = require('jsonwebtoken')
-// const User = require('../models/User');
 const { isBlacklisted, addToBlacklist } = require('../utils/tokenBlacklist')
 const User = require('../models/User')
 
@@ -21,7 +20,6 @@ async function auth(req, res, next) {
     try {
       payload = jwt.verify(token, process.env.JWT_SECRET)
     } catch (err) {
-      // Auto-logout on any JWT error
       addToBlacklist(token)
       if (err.name === 'TokenExpiredError') {
         return res

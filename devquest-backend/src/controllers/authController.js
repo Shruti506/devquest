@@ -35,7 +35,6 @@ const CreateUser = async (req, res) => {
       password: hashedPassword,
     })
 
-    // const { password: pwd, ...userData } = newUser.toObject()
     res
       .status(201)
       .json({ message: 'User created successfully', user: newUser })

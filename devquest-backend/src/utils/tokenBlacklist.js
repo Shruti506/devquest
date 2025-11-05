@@ -1,6 +1,5 @@
 const jwt = require('jsonwebtoken');
 
-// token -> expiresAt (epoch ms)
 const tokenToExpiryMs = new Map();
 
 function getExpiryMsFromToken(token) {
@@ -10,7 +9,6 @@ function getExpiryMsFromToken(token) {
       return decoded.exp * 1000;
     }
   } catch (_) {}
-  // Fallback: expire in 8 hours if decode fails
   return Date.now() + 8 * 60 * 60 * 1000;
 }
 
@@ -29,7 +27,6 @@ function isBlacklisted(token) {
   return true;
 }
 
-// Periodic cleanup of expired tokens
 setInterval(() => {
   const now = Date.now();
   for (const [token, exp] of tokenToExpiryMs.entries()) {

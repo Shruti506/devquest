@@ -34,7 +34,8 @@ export default async function DashboardPage() {
           <CardContent>
             <div className="space-y-4">
               <p className="text-gray-700">
-                You are logged in as: <strong>{userEmail}</strong>
+                You are logged in
+                {/* as: <strong>{userEmail}</strong> */}
               </p>
               <div className="p-4 bg-green-50 border border-green-200 rounded-md">
                 <p className="text-green-800 font-medium">
@@ -48,7 +49,7 @@ export default async function DashboardPage() {
           </CardContent>
         </Card>
 
-        <Card className="shadow-md mt-6">
+        {/* <Card className="shadow-md mt-6">
           <CardHeader
             title={
               <Typography variant="h6" fontWeight="bold">
@@ -72,7 +73,7 @@ export default async function DashboardPage() {
               </div>
             </div>
           </CardContent>
-        </Card>
+        </Card> */}
       </div>
     </div>
   )

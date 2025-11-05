@@ -1,26 +1,25 @@
-// src/components/quest/QuestList.tsx
 'use client'
 
-import { useState } from 'react'
-import { useQuests } from '@/hooks/useQuests'
-import { CircularProgress, Alert } from '@mui/material'
+import { useMemo, useState } from 'react'
+import { QuestHeader } from '../quest/QuestHeader'
+import { AddQuestModal } from '../quest/AddQuestModal'
 import { questApi } from '@/lib/quest-api'
-import { QuestFilters } from './QuestFilters'
-import { QuestCard } from './QuestCard'
-import { QuestPagination } from './QuestPagination'
-import { AddQuestModal } from './AddQuestModal'
-import { QuestHeader } from './QuestHeader'
+import { useQuests } from '@/hooks/useQuests'
+import { Alert } from '@mui/material'
+import { QuestFilters } from '../quest/QuestFilters'
+import { QuestCard } from '../quest/QuestCard'
+import { QuestPagination } from '../quest/QuestPagination'
 
-interface QuestListProps {
+interface MyQuestListProps {
   userId: string | undefined
   token: string | undefined
-  mode?: 'all' | 'my'
 }
 
-export const QuestList = ({ userId, token, mode = 'all' }: QuestListProps) => {
+export const MyQuestList = ({ userId, token }: MyQuestListProps) => {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const {
     quests,
+    allQuests,
     loading,
     error,
     filter,
@@ -30,7 +29,15 @@ export const QuestList = ({ userId, token, mode = 'all' }: QuestListProps) => {
     totalPages,
     totalQuests,
     refetch,
-  } = useQuests({ userId, token, mode })
+  } = useQuests({ userId, token, mode: 'my' })
+
+  const counts = useMemo(() => {
+    return {
+      all: allQuests.length,
+      solved: allQuests.filter((q) => q.status === 'Solved').length,
+      unsolved: allQuests.filter((q) => q.status === 'Unsolved').length,
+    }
+  }, [allQuests])
 
   const handleCreateQuest = async (data: any) => {
     if (!token) return
@@ -43,20 +50,26 @@ export const QuestList = ({ userId, token, mode = 'all' }: QuestListProps) => {
     }
   }
 
-  if (loading && quests.length === 0) {
-    return (
-      <div className="flex justify-center items-center min-h-[400px]">
-        <CircularProgress />
-      </div>
-    )
+  const handleDeleteQuest = async (questId: string) => {
+    if (!token) return
+    if (!confirm('Are you sure you want to delete this quest?')) return
+
+    try {
+      await questApi.deleteQuest(token, questId)
+      await refetch()
+    } catch (err: any) {
+      alert(err.message || 'Failed to delete quest')
+    }
   }
 
   return (
     <div>
-      <div className="max-w-6xl mx-auto sticky top-16 z-40 flex justify-between items-center bg-gray-50 py-4 px-4">
-        <QuestHeader />
+      <div className="max-w-6xl mx-auto sticky top-16 z-49 bg-gray-50 py-4 px-4">
+        <QuestHeader
+          title="My Quests"
+          onAddClick={() => setIsModalOpen(true)}
+        />
       </div>
-
       <div className="max-w-6xl mx-auto px-4 py-8">
         {/* Error Alert */}
         {error && (
@@ -64,20 +77,14 @@ export const QuestList = ({ userId, token, mode = 'all' }: QuestListProps) => {
             {error}
           </Alert>
         )}
-
         {/* Filters */}
-        <QuestFilters
-          activeFilter={filter}
-          onFilterChange={setFilter}
-        />
-
-        {/* Loading State */}
-        {loading ? (
-          <div className="flex justify-center items-center min-h-[300px]">
-            <CircularProgress />
-          </div>
-        ) : quests.length === 0 ? (
-          /* Empty State */
+        {/* <QuestFilters
+        activeFilter={filter}
+        onFilterChange={setFilter}
+        counts={counts}
+      /> */}
+        {/* Quest Grid */}
+        {quests.length === 0 ? (
           <div className="text-center py-12">
             <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-100 mb-4">
               <svg
@@ -99,18 +106,20 @@ export const QuestList = ({ userId, token, mode = 'all' }: QuestListProps) => {
             </h3>
             <p className="text-gray-600">
               {filter === 'All'
-                ? mode === 'my'
-                  ? 'Start by creating your first quest'
-                  : 'No quests available at the moment'
+                ? 'Start by creating your first quest'
                 : `No ${filter.toLowerCase()} quests available`}
             </p>
           </div>
         ) : (
-          /* Quest Grid */
           <>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {quests.map((quest) => (
-                <QuestCard key={quest._id} quest={quest} />
+                <QuestCard
+                  key={quest._id}
+                  quest={quest}
+                  showDelete={true}
+                  onDelete={handleDeleteQuest}
+                />
               ))}
             </div>
 
@@ -127,8 +136,6 @@ export const QuestList = ({ userId, token, mode = 'all' }: QuestListProps) => {
             </div>
           </>
         )}
-
-        {/* Add Quest Modal */}
         <AddQuestModal
           open={isModalOpen}
           onClose={() => setIsModalOpen(false)}

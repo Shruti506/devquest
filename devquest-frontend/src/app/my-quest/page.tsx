@@ -1,6 +1,10 @@
-import { QuestList } from '@/components/quest/QuestList'
+import { MyQuestList } from '@/components/my-quest/MyQuestList'
 import { decodeToken, getServerToken } from '@/lib/auth'
 
+interface DecodedToken {
+  sub: string
+  exp: number
+}
 
 const QuestPage = async () => {
   const token = await getServerToken()
@@ -11,7 +15,7 @@ const QuestPage = async () => {
     return null
   }
 
-  return <QuestList userId={userId} token={token} />
+  return <MyQuestList userId={userId} token={token} />
 }
 
 export default QuestPage

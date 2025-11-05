@@ -6,6 +6,7 @@ const getLeaderboard = async (req, res) => {
   try {
     const scope = (req.query.scope || 'global').toLowerCase()
     const { page, limit, skip } = parsePagination(req.query)
+    const sortOrder = req.query.sort === 'asc' ? 1 : -1
 
     // ===== 🌍 GLOBAL LEADERBOARD =====
     if (scope === 'global') {
@@ -20,7 +21,7 @@ const getLeaderboard = async (req, res) => {
         },
         {
           $setWindowFields: {
-            sortBy: { xp: -1 }, // rank based on XP descending
+            sortBy: { xp: sortOrder },
             output: { rank: { $rank: {} } },
           },
         },
@@ -36,7 +37,7 @@ const getLeaderboard = async (req, res) => {
             rank: 1,
           },
         },
-        { $sort: { rank: 1 } }, // ✅ top rank first
+        { $sort: { xp: sortOrder } },
         {
           $facet: {
             items: [{ $skip: skip }, { $limit: limit }],
@@ -57,6 +58,7 @@ const getLeaderboard = async (req, res) => {
           total,
           totalPages: Math.ceil(total / limit),
           scope,
+          sort: req.query.sort || 'desc',
         },
       })
     }
@@ -80,7 +82,7 @@ const getLeaderboard = async (req, res) => {
       },
       {
         $setWindowFields: {
-          sortBy: { earnedXp: -1 }, // rank by earned XP (desc)
+          sortBy: { earnedXp: sortOrder },
           output: { rank: { $rank: {} } },
         },
       },
@@ -120,7 +122,7 @@ const getLeaderboard = async (req, res) => {
           rank: 1,
         },
       },
-      { $sort: { rank: 1 } }, // ✅ highest rank on top
+      { $sort: { earnedXp: sortOrder } },
       {
         $facet: {
           items: [{ $skip: skip }, { $limit: limit }],
@@ -135,7 +137,14 @@ const getLeaderboard = async (req, res) => {
 
     return res.status(200).json({
       items,
-      meta: { page, limit, total, totalPages: Math.ceil(total / limit), scope },
+      meta: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit),
+        scope,
+        sort: req.query.sort || 'desc',
+      },
     })
   } catch (error) {
     return res.status(500).json({ message: 'Failed to fetch leaderboard' })
@@ -147,25 +156,22 @@ const getUserRank = async (req, res) => {
     const me = await User.findById(req.user._id)
     if (!me) return res.status(404).json({ message: 'User not found' })
 
-    // Compute global rank: count users with xp > me.xp, add 1
     const higherCount = await User.countDocuments({ xp: { $gt: me.xp } })
     const rank = higherCount + 1
 
-    // Nearby users: 5 above (higher xp) and 5 below (lower xp)
     const above = await User.find({ xp: { $gt: me.xp } })
-      .sort({ xp: 1, _id: 1 }) // ascending to take closest higher xps
+      .sort({ xp: 1, _id: 1 })
       .limit(5)
       .lean()
     const below = await User.find({ xp: { $lt: me.xp } })
-      .sort({ xp: -1, _id: 1 }) // descending for closest lower xps
+      .sort({ xp: -1, _id: 1 })
       .limit(5)
       .lean()
 
-    // Project minimal fields with counts
     function mapUser(u) {
       return {
         _id: u._id,
-        username: u.username,
+        name: u.name,
         xp: u.xp,
         level: u.level,
         badgesCount: Array.isArray(u.badges) ? u.badges.length : 0,
@@ -179,7 +185,7 @@ const getUserRank = async (req, res) => {
       user: mapUser(me.toObject()),
       rank,
       nearby: {
-        above: above.map(mapUser).reverse(), // show highest rank first among above
+        above: above.map(mapUser).reverse(),
         below: below.map(mapUser),
       },
     })

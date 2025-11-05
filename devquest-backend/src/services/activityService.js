@@ -21,7 +21,6 @@ const logActivity = async (arg1, type, description, metadata) => {
       metadata: meta,
     })
   } catch (_) {
-    // eslint-disable-next-line no-console
     console.log('[Activity][fallback]', {
       activityType,
       userId: userId?.toString?.(),

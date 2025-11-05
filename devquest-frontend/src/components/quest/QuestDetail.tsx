@@ -15,6 +15,8 @@ import {
 } from 'lucide-react'
 import { Quest, QuestStatus } from '@/types/quest'
 import { questApi } from '@/lib/quest-api'
+import { appEvents } from '@/lib/events'
+import { useMyRank } from '@/hooks/useMyRank'
 
 interface QuestDetailProps {
   questId: string
@@ -27,6 +29,7 @@ export const QuestDetail = ({ questId, token, userId }: QuestDetailProps) => {
   const [quest, setQuest] = useState<Quest | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const { refetch } = useMyRank(token)
 
   // Calculate status based on completedBy array
   const questStatus: QuestStatus = useMemo(() => {
@@ -108,6 +111,16 @@ export const QuestDetail = ({ questId, token, userId }: QuestDetailProps) => {
         prev
           ? { ...prev, completedBy: [...(prev.completedBy || []), userId!] }
           : prev,
+      )
+      // refetch()
+      // Refetch rank data
+      await refetch()
+
+      // Emit event using EventTarget
+      appEvents.dispatchEvent(
+        new CustomEvent('questCompleted', {
+          detail: { questId, userId }, // Optional: pass data
+        }),
       )
     } catch (err) {
       alert(err instanceof Error ? err.message : 'Failed to complete quest')

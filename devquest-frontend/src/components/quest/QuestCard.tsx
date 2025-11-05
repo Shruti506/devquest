@@ -2,15 +2,21 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import { Card, CardContent, Chip } from '@mui/material'
-import { Calendar, Trophy } from 'lucide-react'
+import { Card, CardContent, Chip, IconButton, Tooltip } from '@mui/material'
+import { Calendar, Trash2, Trophy } from 'lucide-react'
 import { Quest } from '@/types/quest'
 
 interface QuestCardProps {
   quest: Quest
+  showDelete?: boolean
+  onDelete?: (questId: string) => void
 }
 
-export const QuestCard = ({ quest }: QuestCardProps) => {
+export const QuestCard = ({
+  quest,
+  showDelete = false,
+  onDelete,
+}: QuestCardProps) => {
   const router = useRouter()
 
   const handleCardClick = () => {
@@ -34,6 +40,11 @@ export const QuestCard = ({ quest }: QuestCardProps) => {
     return status === 'Solved' ? 'success' : 'default'
   }
 
+  const handleDeleteClick = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    onDelete?.(quest._id)
+  }
+
   return (
     <Card
       onClick={handleCardClick}
@@ -52,16 +63,26 @@ export const QuestCard = ({ quest }: QuestCardProps) => {
             color={getDifficultyColor(quest.difficulty)}
             size="small"
           />
-          <Chip
-            // label={quest.status}
-            // color={getStatusColor(quest.status)}
-            label={quest.status ?? 'Unsolved'}
-            color={getStatusColor(quest.status ?? 'Unsolved')}
-            size="small"
-            variant="outlined"
-          />
+          <div className="flex items-center gap-2">
+            <Chip
+              label={quest.status ?? 'Unsolved'}
+              color={getStatusColor(quest.status ?? 'Unsolved')}
+              size="small"
+              variant="outlined"
+            />
+            {showDelete && (
+              <Tooltip title="Delete quest">
+                <IconButton
+                  size="small"
+                  onClick={handleDeleteClick}
+                  sx={{ color: 'error.main' }}
+                >
+                  <Trash2 size={18} />
+                </IconButton>
+              </Tooltip>
+            )}
+          </div>
         </div>
-
         {/* Title */}
         <h3 className="text-lg font-semibold text-gray-900 mb-2 line-clamp-2">
           {quest.title}

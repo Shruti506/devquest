@@ -27,6 +27,7 @@ const UserSchema = new Schema(
         type: String,
       },
     ],
+    completedQuests: [{ type: mongoose.Schema.Types.ObjectId }],
     tokenVersion: { type: Number, default: 0 },
   },
   { timestamps: true },
