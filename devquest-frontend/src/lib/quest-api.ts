@@ -10,23 +10,6 @@ import {
 const API_BASE_URL = 'http://localhost:4000/api'
 
 export const questApi = {
-  // async getQuests(token: string): Promise<QuestApiResponse> {
-  //   const response = await fetch(`${API_BASE_URL}/quests`, {
-  //     headers: {
-  //       Authorization: `Bearer ${token}`,
-  //       'Content-Type': 'application/json',
-  //     },
-  //     cache: 'no-store',
-  //   })
-
-  //   if (!response.ok) {
-  //     throw new Error('Failed to fetch quests')
-  //   }
-
-  //   return response.json()
-  // },
-  // src/lib/quest-api.ts
-
   async getQuests(
     token: string,
     params?: {
@@ -62,14 +45,36 @@ export const questApi = {
     return response.json()
   },
 
-  async getMyQuests(token: string): Promise<QuestApiResponse> {
-    const response = await fetch(`${API_BASE_URL}/quests/my-quests`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-        'Content-Type': 'application/json',
+  async getMyQuests(
+    token: string,
+    params?: {
+      page?: number
+      limit?: number
+      difficulty?: string
+      category?: string
+      status?: string
+      sort?: 'newest' | 'xp' | '-xp'
+    },
+  ): Promise<QuestApiResponse> {
+    const query = new URLSearchParams()
+
+    if (params?.page) query.append('page', String(params.page))
+    if (params?.limit) query.append('limit', String(params.limit))
+    if (params?.difficulty) query.append('difficulty', params.difficulty)
+    if (params?.category) query.append('category', params.category)
+    if (params?.status) query.append('status', params.status)
+    if (params?.sort) query.append('sort', params.sort)
+
+    const response = await fetch(
+      `${API_BASE_URL}/quests/my-quests?${query.toString()}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        cache: 'no-store',
       },
-      cache: 'no-store',
-    })
+    )
 
     if (!response.ok) {
       throw new Error('Failed to fetch user quests')
@@ -149,7 +154,6 @@ export const questApi = {
   },
 }
 
-// Helper function to calculate reward points
 export const getRewardPoints = (difficulty: Difficulty): number => {
   const rewardMap = {
     Easy: 8,

@@ -5,10 +5,9 @@ import { QuestHeader } from '../quest/QuestHeader'
 import { AddQuestModal } from '../quest/AddQuestModal'
 import { questApi } from '@/lib/quest-api'
 import { useQuests } from '@/hooks/useQuests'
-import { Alert } from '@mui/material'
-import { QuestFilters } from '../quest/QuestFilters'
 import { QuestCard } from '../quest/QuestCard'
 import { QuestPagination } from '../quest/QuestPagination'
+import { DeleteConfirmationModal } from './DeleteConfirmationModal'
 
 interface MyQuestListProps {
   userId: string | undefined
@@ -17,11 +16,12 @@ interface MyQuestListProps {
 
 export const MyQuestList = ({ userId, token }: MyQuestListProps) => {
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const [deleteQuestId, setDeleteQuestId] = useState<string | null>(null)
+
   const {
     quests,
     allQuests,
     loading,
-    error,
     filter,
     setFilter,
     currentPage,
@@ -50,13 +50,22 @@ export const MyQuestList = ({ userId, token }: MyQuestListProps) => {
     }
   }
 
-  const handleDeleteQuest = async (questId: string) => {
-    if (!token) return
-    if (!confirm('Are you sure you want to delete this quest?')) return
+  const handleDeleteClick = (questId: string) => {
+    setDeleteQuestId(questId)
+  }
+
+  const handleConfirmDelete = async () => {
+    if (!token || !deleteQuestId) return
 
     try {
-      await questApi.deleteQuest(token, questId)
-      await refetch()
+      await questApi.deleteQuest(token, deleteQuestId)
+      setDeleteQuestId(null)
+
+      const data = await refetch()
+
+      if (quests.length === 1 && currentPage > 1) {
+        setCurrentPage(1)
+      }
     } catch (err: any) {
       alert(err.message || 'Failed to delete quest')
     }
@@ -71,18 +80,6 @@ export const MyQuestList = ({ userId, token }: MyQuestListProps) => {
         />
       </div>
       <div className="max-w-6xl mx-auto px-4 py-8">
-        {/* Error Alert */}
-        {error && (
-          <Alert severity="error" className="mb-6">
-            {error}
-          </Alert>
-        )}
-        {/* Filters */}
-        {/* <QuestFilters
-        activeFilter={filter}
-        onFilterChange={setFilter}
-        counts={counts}
-      /> */}
         {/* Quest Grid */}
         {quests.length === 0 ? (
           <div className="text-center py-12">
@@ -118,7 +115,7 @@ export const MyQuestList = ({ userId, token }: MyQuestListProps) => {
                   key={quest._id}
                   quest={quest}
                   showDelete={true}
-                  onDelete={handleDeleteQuest}
+                  onDelete={() => handleDeleteClick(quest._id)}
                 />
               ))}
             </div>
@@ -136,12 +133,17 @@ export const MyQuestList = ({ userId, token }: MyQuestListProps) => {
             </div>
           </>
         )}
-        <AddQuestModal
-          open={isModalOpen}
-          onClose={() => setIsModalOpen(false)}
-          onSubmit={handleCreateQuest}
-        />
       </div>
+      <AddQuestModal
+        open={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onSubmit={handleCreateQuest}
+      />
+      <DeleteConfirmationModal
+        open={!!deleteQuestId}
+        onClose={() => setDeleteQuestId(null)}
+        onConfirm={handleConfirmDelete}
+      />
     </div>
   )
 }

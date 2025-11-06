@@ -4,6 +4,7 @@
 import { useState, useEffect } from 'react'
 import { questApi } from '@/lib/quest-api'
 import { Quest, QuestWithStatus, FilterType } from '@/types/quest'
+import toast from 'react-hot-toast'
 
 interface UseQuestsProps {
   userId: string | undefined
@@ -25,7 +26,7 @@ export const useQuests = ({ userId, token, mode = 'all' }: UseQuestsProps) => {
 
   const fetchQuests = async () => {
     if (!token) {
-      setError('No authentication token')
+      toast.error('No authentication token')
       setLoading(false)
       return
     }
@@ -35,11 +36,15 @@ export const useQuests = ({ userId, token, mode = 'all' }: UseQuestsProps) => {
       let data
 
       if (mode === 'my') {
-        data = await questApi.getMyQuests(token)
+        data = await questApi.getMyQuests(token, {
+          page: currentPage,
+          limit: itemsPerPage,
+        })
       } else {
         data = await questApi.getQuests(token, {
           page: currentPage,
           limit: itemsPerPage,
+          status: filter,
         })
       }
 
@@ -48,18 +53,18 @@ export const useQuests = ({ userId, token, mode = 'all' }: UseQuestsProps) => {
       setTotalQuests(data.meta?.total || 0)
       setError(null)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to fetch quests')
+      const message =
+        err instanceof Error ? err.message : 'Failed to fetch quests'
+      toast.error(message)
     } finally {
       setLoading(false)
     }
   }
 
-  // Fetch when token or page changes
   useEffect(() => {
     fetchQuests()
-  }, [token, mode, currentPage])
+  }, [token, mode, currentPage, filter])
 
-  // Reset page when filter changes
   useEffect(() => {
     setCurrentPage(1)
   }, [filter])

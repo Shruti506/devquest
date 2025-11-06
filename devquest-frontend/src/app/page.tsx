@@ -7,7 +7,6 @@ import FeatureCards from '@/components/FeatureCards'
 export default async function HomePage() {
   const authenticated = await isServerAuthenticated()
 
-  // Redirect authenticated users
   if (authenticated) {
     redirect('/dashboard')
   }
@@ -41,7 +40,6 @@ export default async function HomePage() {
             </Link>
           </div>
 
-          {/* Render client-side MUI cards */}
           <FeatureCards />
         </div>
       </div>

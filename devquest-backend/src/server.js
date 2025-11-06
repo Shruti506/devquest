@@ -1,12 +1,14 @@
 const dotenv = require('dotenv')
 const express = require('express')
 const mongoose = require('mongoose')
-const authRoutes = require('./routes/authRoutes')
 const cors = require('cors')
+
+const authRoutes = require('./routes/authRoutes')
 const questRoutes = require('./routes/questRoutes')
 const progressRoutes = require('./routes/progressRoutes')
 const leaderboardRoutes = require('./routes/leaderboardRoutes')
 const badgeRoutes = require('./routes/badgeRoutes')
+const { seedInitialBadges } = require('./services/badgeService')
 
 dotenv.config()
 const app = express()
@@ -37,7 +39,9 @@ app.use('/api/badges', badgeRoutes)
 // connect to db
 mongoose
   .connect(process.env.MONGO_URI)
-  .then(() => {
+  .then(async () => {
+    await seedInitialBadges()
+
     app.listen(process.env.PORT, () => {
       console.log('connected to db listening on port', process.env.PORT)
     })
