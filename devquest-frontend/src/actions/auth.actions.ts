@@ -3,7 +3,7 @@
 
 import { redirect } from 'next/navigation'
 import axios, { AxiosError } from 'axios'
-import { setServerToken, clearServerToken } from '@/lib/auth'
+import { setServerToken, clearServerToken, getServerToken } from '@/lib/auth'
 import {
   LoginFormData,
   RegisterFormData,
@@ -116,19 +116,25 @@ export async function registerAction(
 
 export async function logoutAction(): Promise<void> {
   try {
-    // Call logout API (optional, if backend needs to blacklist token)
+    const token = await getServerToken()
+
+    if (!token) {
+      console.warn('No token found during logout')
+    }
+
     await axios.post(
       `${API_BASE_URL}/auth/logout`,
       {},
       {
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
       },
     )
   } catch (error) {
-    // Continue with logout even if API call fails
     console.error('Logout API error:', error)
   } finally {
-    // Clear token
     await clearServerToken()
     redirect('/login')
   }

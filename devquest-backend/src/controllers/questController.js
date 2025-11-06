@@ -56,8 +56,10 @@ const getAllQuests = async (req, res) => {
     if (difficulty) filter.difficulty = difficulty
     if (category) filter.category = category
 
-    if (status && status !== 'All') {
-      filter.status = status 
+    if (status === 'Solved') {
+      filter.completedBy = { $in: [req.user._id] }
+    } else if (status === 'Unsolved') {
+      filter.completedBy = { $nin: [req.user._id] }
     }
 
     let sortSpec = { createdAt: -1 }

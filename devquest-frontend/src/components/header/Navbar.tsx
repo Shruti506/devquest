@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import LogoutButton from '@/components/LogoutButton'
+import LogoutButton from '@/components/header/LogoutButton'
 import { useEffect, useState } from 'react'
 import { UserIcon } from 'lucide-react'
 import { appEvents } from '@/lib/events'
@@ -17,11 +17,10 @@ export default function Navbar({ userEmail, token }: NavbarProps) {
   const pathname = usePathname()
   const [activeItem, setActiveItem] = useState<string | null>(pathname)
 
-
   const { userData, refetch } = useUser()
+
   useEffect(() => {
     const handleQuestCompleted = (event: Event) => {
-      console.log('Quest completed event received in Navbar')
       refetch()
     }
 
@@ -45,7 +44,7 @@ export default function Navbar({ userEmail, token }: NavbarProps) {
     setActiveItem(href)
   }
 
-  const isActive = (href: string) => activeItem === href
+  const isActive = (href: string) => pathname === href
 
   const isLeaderboardActive = pathname?.startsWith('/leaderboard')
 
@@ -54,7 +53,9 @@ export default function Navbar({ userEmail, token }: NavbarProps) {
       <div className="max-w-8xl mx-auto flex justify-between items-center">
         <Link
           href="/dashboard"
-          className="text-2xl font-bold text-gray-900"
+          className={`text-2xl font-bold text-gray-900 px-3 py-1 rounded-md ${
+            isActive('/dashboard') && 'bg-blue-100 text-blue-700'
+          }`}
           onClick={() => handleNavClick('/dashboard')}
         >
           Dashboard

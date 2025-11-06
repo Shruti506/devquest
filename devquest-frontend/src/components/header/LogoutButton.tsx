@@ -10,6 +10,7 @@ export default function LogoutButton() {
   const [isPending, startTransition] = useTransition()
 
   const handleLogout = () => {
+
     startTransition(async () => {
       await logoutAction()
     })
