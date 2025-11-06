@@ -90,7 +90,7 @@ const ActivityLogPage = ({ userId, token }: ActivityLogProps) => {
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center gap-3 mb-2">
-            <div className="p-2 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg">
+            <div className="p-2 bg-linear-to-br from-blue-500 to-purple-600 rounded-lg">
               <Activity className="w-8 h-8 text-white" />
             </div>
             <div>

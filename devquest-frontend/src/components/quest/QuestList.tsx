@@ -1,15 +1,15 @@
-// src/components/quest/QuestList.tsx
 'use client'
 
 import { useState } from 'react'
 import { useQuests } from '@/hooks/useQuests'
-import { CircularProgress, Alert } from '@mui/material'
+import { CircularProgress } from '@mui/material'
 import { questApi } from '@/lib/quest-api'
 import { QuestFilters } from './QuestFilters'
 import { QuestCard } from './QuestCard'
 import { QuestPagination } from './QuestPagination'
 import { AddQuestModal } from './AddQuestModal'
 import { QuestHeader } from './QuestHeader'
+import toast from 'react-hot-toast'
 
 interface QuestListProps {
   userId: string | undefined
@@ -38,8 +38,9 @@ export const QuestList = ({ userId, token, mode = 'all' }: QuestListProps) => {
     try {
       await questApi.createQuest(token, data)
       await refetch()
+      toast.success('Quest created successfully!')
     } catch (err) {
-      throw err
+      toast.error(err instanceof Error ? err.message : 'Failed to create quest')
     }
   }
 
@@ -51,6 +52,10 @@ export const QuestList = ({ userId, token, mode = 'all' }: QuestListProps) => {
     )
   }
 
+  if (error) {
+    toast.error(error)
+  }
+
   return (
     <div>
       <div className="max-w-6xl mx-auto sticky top-16 z-40 flex justify-between items-center bg-gray-50 py-4 px-4">
@@ -58,26 +63,14 @@ export const QuestList = ({ userId, token, mode = 'all' }: QuestListProps) => {
       </div>
 
       <div className="max-w-6xl mx-auto px-4 py-8">
-        {/* Error Alert */}
-        {error && (
-          <Alert severity="error" className="mb-6">
-            {error}
-          </Alert>
-        )}
 
-        {/* Filters */}
-        <QuestFilters
-          activeFilter={filter}
-          onFilterChange={setFilter}
-        />
+        <QuestFilters activeFilter={filter} onFilterChange={setFilter} />
 
-        {/* Loading State */}
         {loading ? (
           <div className="flex justify-center items-center min-h-[300px]">
             <CircularProgress />
           </div>
         ) : quests.length === 0 ? (
-          /* Empty State */
           <div className="text-center py-12">
             <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-100 mb-4">
               <svg
@@ -106,7 +99,6 @@ export const QuestList = ({ userId, token, mode = 'all' }: QuestListProps) => {
             </p>
           </div>
         ) : (
-          /* Quest Grid */
           <>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {quests.map((quest) => (
@@ -114,21 +106,18 @@ export const QuestList = ({ userId, token, mode = 'all' }: QuestListProps) => {
               ))}
             </div>
 
-            {/* Pagination */}
             <QuestPagination
               currentPage={currentPage}
               totalPages={totalPages}
               onPageChange={setCurrentPage}
             />
 
-            {/* Quest Count */}
             <div className="text-center mt-4 text-sm text-gray-500">
               Showing {quests.length} of {totalQuests} quests
             </div>
           </>
         )}
 
-        {/* Add Quest Modal */}
         <AddQuestModal
           open={isModalOpen}
           onClose={() => setIsModalOpen(false)}

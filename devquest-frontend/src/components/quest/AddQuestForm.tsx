@@ -1,10 +1,10 @@
-// src/components/quest/AddQuestForm.tsx
 'use client'
 
 import { useState } from 'react'
-import { TextField, MenuItem, Alert } from '@mui/material'
+import { TextField, MenuItem } from '@mui/material'
 import { Difficulty } from '@/types/quest'
 import { getRewardPoints } from '@/lib/quest-api'
+import toast from 'react-hot-toast'
 
 interface AddQuestFormProps {
   onSubmit: (data: {
@@ -21,7 +21,6 @@ export const AddQuestForm = ({ onSubmit, onCancel }: AddQuestFormProps) => {
   const [description, setDescription] = useState('')
   const [difficulty, setDifficulty] = useState<Difficulty>('Easy')
   const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
 
   const xpReward = getRewardPoints(difficulty)
 
@@ -29,13 +28,12 @@ export const AddQuestForm = ({ onSubmit, onCancel }: AddQuestFormProps) => {
     e.preventDefault()
 
     if (!title.trim() || !description.trim()) {
-      setError('Please fill in all fields')
+      toast.error('Please fill in all fields')
       return
     }
 
     try {
       setLoading(true)
-      setError('')
       await onSubmit({
         title: title.trim(),
         description: description.trim(),
@@ -43,12 +41,14 @@ export const AddQuestForm = ({ onSubmit, onCancel }: AddQuestFormProps) => {
         xpReward,
       })
 
+      toast.success('Quest created successfully!')
+
       // Reset form
       setTitle('')
       setDescription('')
       setDifficulty('Easy')
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to create quest')
+      toast.error(err instanceof Error ? err.message : 'Failed to create quest') 
     } finally {
       setLoading(false)
     }
@@ -56,11 +56,6 @@ export const AddQuestForm = ({ onSubmit, onCancel }: AddQuestFormProps) => {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      {error && (
-        <Alert severity="error" onClose={() => setError('')}>
-          {error}
-        </Alert>
-      )}
       <div>
         <TextField
           label="Title"

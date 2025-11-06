@@ -1,4 +1,3 @@
-// src/components/forms/RegisterForm.tsx
 'use client'
 
 import { useState, useTransition } from 'react'
@@ -6,20 +5,19 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Alert, AlertTitle } from '@mui/material'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { registerSchema, RegisterFormData } from '@/lib/validations'
 import { registerAction } from '@/actions/auth.actions'
 import { Visibility, VisibilityOff } from '@mui/icons-material'
+import toast from 'react-hot-toast'
 
 export default function RegisterForm() {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
-  const [serverError, setServerError] = useState<string>('')
 
   const {
     register,
@@ -37,11 +35,11 @@ export default function RegisterForm() {
   })
 
   const onSubmit = (data: RegisterFormData) => {
-    setServerError('')
     startTransition(async () => {
       const result = await registerAction(data)
 
       if (result.success) {
+        toast.success('Account created successfully!')
         router.push('/dashboard')
         router.refresh()
       } else {
@@ -55,7 +53,9 @@ export default function RegisterForm() {
           })
         }
         if (result.message) {
-          setServerError(result.message)
+          toast.error(result.message)
+        } else {
+          toast.error('Registration failed. Please try again.')
         }
       }
     })
@@ -63,12 +63,6 @@ export default function RegisterForm() {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-      {serverError && (
-        <Alert severity="error" className="mb-4">
-          <AlertTitle>{serverError}</AlertTitle>
-        </Alert>
-      )}
-
       <div className="space-y-2">
         <Label htmlFor="name">Name</Label>
         <Input

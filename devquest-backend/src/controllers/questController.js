@@ -57,23 +57,19 @@ const getAllQuests = async (req, res) => {
     if (category) filter.category = category
 
     if (status && status !== 'All') {
-      if (status === 'Solved' || status === 'Unsolved') {
-        filter.status = status
-      }
+      filter.status = status 
     }
 
     let sortSpec = { createdAt: -1 }
     if (sort === 'xp') sortSpec = { xpReward: 1 }
     if (sort === '-xp') sortSpec = { xpReward: -1 }
 
-    const [items, total] = await Promise.all([
-      Quest.find(filter)
-        .sort(sortSpec)
-        .skip((pageNum - 1) * limitNum)
-        .limit(limitNum)
-        .populate('createdBy', 'username email'),
-      Quest.countDocuments(filter),
-    ])
+    const total = await Quest.countDocuments(filter)
+    const items = await Quest.find(filter)
+      .sort(sortSpec)
+      .skip((pageNum - 1) * limitNum)
+      .limit(limitNum)
+      .populate('createdBy', 'username email')
 
     return res.status(200).json({
       items,

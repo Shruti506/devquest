@@ -2,18 +2,12 @@ import LeaderboardModal from '@/components/leaderboard/LeaderboardModal'
 import { getServerToken } from '@/lib/auth'
 import { redirect } from 'next/navigation'
 
-export default async function LeaderboardPage() {
+export default async function InterceptedLeaderboard() {
   const token = await getServerToken()
 
   if (!token) {
     redirect('/login')
   }
 
-  return (
-    <div className="min-h-screen bg-gray-100 pt-8">
-      <div className="max-w-2xl mx-auto">
-        <LeaderboardModal token={token} />
-      </div>
-    </div>
-  )
+  return <LeaderboardModal token={token} />
 }

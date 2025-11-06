@@ -1,9 +1,8 @@
-// src/components/quest/QuestDetail.tsx
 'use client'
 
 import { useEffect, useState, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
-import { Card, CardContent, Chip, CircularProgress, Alert } from '@mui/material'
+import { Card, CardContent, Chip, CircularProgress } from '@mui/material'
 import {
   ArrowLeft,
   Calendar,
@@ -16,7 +15,8 @@ import {
 import { Quest, QuestStatus } from '@/types/quest'
 import { questApi } from '@/lib/quest-api'
 import { appEvents } from '@/lib/events'
-import { useMyRank } from '@/hooks/useMyRank'
+import toast from 'react-hot-toast'
+import { useUser } from '@/context/UserProvider'
 
 interface QuestDetailProps {
   questId: string
@@ -28,10 +28,9 @@ export const QuestDetail = ({ questId, token, userId }: QuestDetailProps) => {
   const router = useRouter()
   const [quest, setQuest] = useState<Quest | null>(null)
   const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const { refetch } = useMyRank(token)
 
-  // Calculate status based on completedBy array
+  const { refetch } = useUser()
+
   const questStatus: QuestStatus = useMemo(() => {
     if (!quest || !userId) return 'Unsolved'
     return quest.completedBy?.includes(userId) ? 'Solved' : 'Unsolved'
@@ -40,18 +39,17 @@ export const QuestDetail = ({ questId, token, userId }: QuestDetailProps) => {
   useEffect(() => {
     const fetchQuestDetail = async () => {
       if (!token) {
-        setError('Authentication required')
+        toast.error('Authentication required')
         setLoading(false)
         return
       }
 
       try {
         setLoading(true)
-        setError(null)
         const data = await questApi.getQuestById(token, questId)
         setQuest(data)
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to load quest')
+        toast.error(err instanceof Error ? err.message : 'Failed to load quest')
       } finally {
         setLoading(false)
       }
@@ -85,7 +83,7 @@ export const QuestDetail = ({ questId, token, userId }: QuestDetailProps) => {
     )
   }
 
-  if (error || !quest) {
+  if (!quest) {
     return (
       <div className="max-w-4xl mx-auto px-4 py-8">
         <button
@@ -95,7 +93,7 @@ export const QuestDetail = ({ questId, token, userId }: QuestDetailProps) => {
           <ArrowLeft className="w-5 h-5" />
           Back to Quests
         </button>
-        <Alert severity="error">{error || 'Quest not found'}</Alert>
+        {toast.error('Quest not found')}
       </div>
     )
   }
@@ -106,24 +104,24 @@ export const QuestDetail = ({ questId, token, userId }: QuestDetailProps) => {
     try {
       setLoading(true)
       await questApi.completeQuest(token, questId)
-      // Optionally, update the quest state to reflect completion
       setQuest((prev) =>
         prev
           ? { ...prev, completedBy: [...(prev.completedBy || []), userId!] }
           : prev,
       )
-      // refetch()
-      // Refetch rank data
       await refetch()
 
-      // Emit event using EventTarget
       appEvents.dispatchEvent(
         new CustomEvent('questCompleted', {
-          detail: { questId, userId }, // Optional: pass data
+          detail: { questId, userId },
         }),
       )
+
+      toast.success('Quest marked as complete!')
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'Failed to complete quest')
+      toast.error(
+        err instanceof Error ? err.message : 'Failed to complete quest',
+      )
     } finally {
       setLoading(false)
     }
@@ -140,7 +138,6 @@ export const QuestDetail = ({ questId, token, userId }: QuestDetailProps) => {
         Back to Quests
       </button>
 
-      {/* Main Quest Card */}
       <Card className="shadow-lg mb-6">
         <div className="p-6 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-t-lg">
           <div className="flex flex-wrap gap-3 mb-4">
@@ -167,7 +164,7 @@ export const QuestDetail = ({ questId, token, userId }: QuestDetailProps) => {
         </div>
 
         <CardContent className="p-6">
-          {/* Description */}
+          {/* Quest Description */}
           <div className="mb-8">
             <h2 className="text-lg font-semibold text-gray-900 mb-3 flex items-center gap-2">
               <Target className="w-5 h-5 text-blue-600" />
@@ -178,9 +175,8 @@ export const QuestDetail = ({ questId, token, userId }: QuestDetailProps) => {
             </p>
           </div>
 
-          {/* Quest Stats Grid */}
+          {/* Quest Info Cards */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-            {/* Reward */}
             <div className="p-4 bg-gradient-to-br from-yellow-50 to-orange-50 rounded-lg border border-yellow-200">
               <div className="flex items-center gap-2 mb-2">
                 <Trophy className="w-5 h-5 text-yellow-600" />
@@ -193,8 +189,7 @@ export const QuestDetail = ({ questId, token, userId }: QuestDetailProps) => {
               </p>
             </div>
 
-            {/* Created Date */}
-            <div className="p-4 bg-gradient-to-br from-blue-50 to-cyan-50 rounded-lg border border-blue-200">
+            <div className="p-4 bg-linear-to-br from-blue-50 to-cyan-50 rounded-lg border border-blue-200">
               <div className="flex items-center gap-2 mb-2">
                 <Calendar className="w-5 h-5 text-blue-600" />
                 <span className="text-sm font-medium text-gray-600">
@@ -212,8 +207,7 @@ export const QuestDetail = ({ questId, token, userId }: QuestDetailProps) => {
               </p>
             </div>
 
-            {/* Last Updated */}
-            <div className="p-4 bg-gradient-to-br from-purple-50 to-pink-50 rounded-lg border border-purple-200">
+            <div className="p-4 bg-linear-to-br from-purple-50 to-pink-50 rounded-lg border border-purple-200">
               <div className="flex items-center gap-2 mb-2">
                 <Clock className="w-5 h-5 text-purple-600" />
                 <span className="text-sm font-medium text-gray-600">
@@ -232,28 +226,26 @@ export const QuestDetail = ({ questId, token, userId }: QuestDetailProps) => {
             </div>
           </div>
 
-          {/* Action Buttons */}
-          <div className="flex gap-3 pt-6 border-t border-gray-200">
-            {questStatus === 'Unsolved' ? (
-              <button
-                onClick={handleMarkComplete}
-                className="flex-1 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
-              >
-                Mark as Complete
-              </button>
-            ) : (
-              <button className="flex-1 px-6 py-3 bg-gray-200 text-gray-700 rounded-lg cursor-not-allowed font-medium">
-                Already Completed
-              </button>
-            )}
-            {/* <button className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium">
-              Share
-            </button> */}
-          </div>
+          {quest.createdBy?._id !== userId && (
+            <div className="flex gap-3 pt-6 border-t border-gray-200">
+              {questStatus === 'Unsolved' ? (
+                <button
+                  onClick={handleMarkComplete}
+                  className="flex-1 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
+                >
+                  Mark as Complete
+                </button>
+              ) : (
+                <button className="flex-1 px-6 py-3 bg-gray-200 text-gray-700 rounded-lg cursor-not-allowed font-medium">
+                  Already Completed
+                </button>
+              )}
+            </div>
+          )}
         </CardContent>
       </Card>
 
-      {/* Additional Info Card */}
+      {/* Quest Metadata Card */}
       <Card className="shadow-md">
         <CardContent className="p-6">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">

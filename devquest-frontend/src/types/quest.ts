@@ -12,6 +12,7 @@ export interface Quest {
   xpReward: number
   completedBy: string[]
   createdBy?: {
+    _id: string
     name: string
     userId: string
   }
@@ -32,9 +33,6 @@ export interface CreateQuestDTO {
 
 export interface QuestApiResponse {
   items: Quest[]
-  // total: number
-  // page?: number
-  // limit?: number
   meta: {
     page: number
     limit: number

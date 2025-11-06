@@ -3,11 +3,10 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import LogoutButton from '@/components/LogoutButton'
-import LeaderboardPopover from './LeaderboardDialog'
 import { useEffect, useState } from 'react'
 import { UserIcon } from 'lucide-react'
-import { useMyRank } from '@/hooks/useMyRank'
 import { appEvents } from '@/lib/events'
+import { useUser } from '@/context/UserProvider'
 
 interface NavbarProps {
   userEmail: string | null
@@ -18,8 +17,8 @@ export default function Navbar({ userEmail, token }: NavbarProps) {
   const pathname = usePathname()
   const [activeItem, setActiveItem] = useState<string | null>(pathname)
 
-  const { userData, refetch } = useMyRank(token)
 
+  const { userData, refetch } = useUser()
   useEffect(() => {
     const handleQuestCompleted = (event: Event) => {
       console.log('Quest completed event received in Navbar')
@@ -46,11 +45,9 @@ export default function Navbar({ userEmail, token }: NavbarProps) {
     setActiveItem(href)
   }
 
-  const handleLeaderboardClick = () => {
-    setActiveItem('leaderboard')
-  }
-
   const isActive = (href: string) => activeItem === href
+
+  const isLeaderboardActive = pathname?.startsWith('/leaderboard')
 
   return (
     <div className="bg-gray-50 p-4 sticky top-0 z-50">
@@ -77,12 +74,14 @@ export default function Navbar({ userEmail, token }: NavbarProps) {
           ))}
 
           {token && (
-            <div onClick={handleLeaderboardClick}>
-              <LeaderboardPopover
-                token={token}
-                isActive={activeItem === 'leaderboard'}
-              />
-            </div>
+            <Link
+              href="/leaderboard"
+              onClick={() => handleNavClick('/leaderboard')}
+              className={`font-medium px-3 py-1 rounded-md transition-colors duration-200 text-gray-700 hover:text-gray-900 hover:bg-gray-100
+                ${isLeaderboardActive ? 'bg-blue-100 text-blue-700' : ''}`}
+            >
+              Leaderboard
+            </Link>
           )}
         </nav>
 
