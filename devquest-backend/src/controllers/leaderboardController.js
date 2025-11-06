@@ -8,7 +8,6 @@ const getLeaderboard = async (req, res) => {
     const { page, limit, skip } = parsePagination(req.query)
     const sortOrder = req.query.sort === 'asc' ? 1 : -1
 
-    // ===== 🌍 GLOBAL LEADERBOARD =====
     if (scope === 'global') {
       const pipeline = [
         {

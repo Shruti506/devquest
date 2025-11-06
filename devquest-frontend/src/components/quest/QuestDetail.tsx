@@ -139,7 +139,7 @@ export const QuestDetail = ({ questId, token, userId }: QuestDetailProps) => {
       </button>
 
       <Card className="shadow-lg mb-6">
-        <div className="p-6 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-t-lg">
+        <div className="p-6 bg-linear-to-r from-blue-50 to-indigo-50 rounded-t-lg">
           <div className="flex flex-wrap gap-3 mb-4">
             <Chip
               label={quest.difficulty}
@@ -177,7 +177,7 @@ export const QuestDetail = ({ questId, token, userId }: QuestDetailProps) => {
 
           {/* Quest Info Cards */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-            <div className="p-4 bg-gradient-to-br from-yellow-50 to-orange-50 rounded-lg border border-yellow-200">
+            <div className="p-4 bg-linear-to-br from-yellow-50 to-orange-50 rounded-lg border border-yellow-200">
               <div className="flex items-center gap-2 mb-2">
                 <Trophy className="w-5 h-5 text-yellow-600" />
                 <span className="text-sm font-medium text-gray-600">
