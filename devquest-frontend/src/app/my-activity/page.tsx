@@ -1,7 +1,8 @@
 // app/activity/page.tsx
 
 import ActivityLogPage from '@/components/activity/ActivityLog'
-import { decodeToken, getServerToken } from '@/lib/auth'
+import { decodeToken } from '@/lib/auth'
+import { getServerToken } from '@/lib/auth-server'
 
 const ActivityLog = async () => {
   const token = await getServerToken()
@@ -20,5 +21,3 @@ const ActivityLog = async () => {
   )
 }
 export default ActivityLog
-
-

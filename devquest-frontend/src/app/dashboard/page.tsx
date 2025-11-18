@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation'
-import { getServerToken, decodeToken } from '@/lib/auth'
+import { decodeToken } from '@/lib/auth'
 import DashboardContent from '@/components/dashboard/DashboardContent'
+import { getServerToken } from '@/lib/auth-server'
 
 export const metadata = {
   title: 'Dashboard - Your App',

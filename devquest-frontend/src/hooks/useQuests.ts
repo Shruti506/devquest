@@ -18,7 +18,6 @@ export const useQuests = ({ userId, token, mode = 'all' }: UseQuestsProps) => {
   const [error, setError] = useState<string | null>(null)
   const [filter, setFilter] = useState<FilterType>('All')
 
-  // Pagination states
   const [currentPage, setCurrentPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
   const [totalQuests, setTotalQuests] = useState(0)

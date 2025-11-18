@@ -1,7 +1,6 @@
-// // src/lib/activity-api.ts
+// src/lib/activity-api.ts
 import { ActivityApiResponse, ActivityFilters } from '@/types/activity'
-
-const API_BASE_URL = 'http://localhost:4000/api'
+import { apiClient } from './api-client'
 
 export const activityApi = {
   async getActivityLog(
@@ -20,21 +19,9 @@ export const activityApi = {
     if (params?.startDate) query.append('startDate', params.startDate)
     if (params?.endDate) query.append('endDate', params.endDate)
 
-    const response = await fetch(
-      `${API_BASE_URL}/progress/activity-log?${query.toString()}`,
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-        cache: 'no-store',
-      },
+    return apiClient.get<ActivityApiResponse>(
+      `/progress/activity-log?${query.toString()}`,
+      { token },
     )
-
-    if (!response.ok) {
-      throw new Error('Failed to fetch activity log')
-    }
-
-    return response.json()
   },
 }

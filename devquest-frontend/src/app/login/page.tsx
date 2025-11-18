@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation'
 import { Card, CardHeader, CardContent, Typography } from '@mui/material'
 import LoginForm from '@/components/forms/LoginForm'
-import { isServerAuthenticated } from '@/lib/auth'
+import { isServerAuthenticated } from '@/lib/auth-server'
 
 export const metadata = {
   title: 'Login - Your App',

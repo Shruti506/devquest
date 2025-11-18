@@ -22,9 +22,10 @@ async function auth(req, res, next) {
     } catch (err) {
       addToBlacklist(token)
       if (err.name === 'TokenExpiredError') {
-        return res
-          .status(401)
-          .json({ message: 'Token expired. Please log in again.' })
+        return res.status(401).json({
+          message: 'Token expired. Please log in again.',
+          code: 'TOKEN_EXPIRED',
+        })
       }
       if (err.name === 'JsonWebTokenError') {
         return res
@@ -35,6 +36,14 @@ async function auth(req, res, next) {
         return res.status(401).json({ message: 'Token not active yet.' })
       }
       return res.status(401).json({ message: 'Authentication failed' })
+    }
+
+    // Check token type - must be access token
+    if (payload.type !== 'access') {
+      addToBlacklist(token)
+      return res.status(401).json({
+        message: 'Invalid token type. Please use access token.',
+      })
     }
 
     const userId = payload.sub
@@ -53,15 +62,17 @@ async function auth(req, res, next) {
       tokenVersion !== user.tokenVersion
     ) {
       addToBlacklist(token)
-      return res
-        .status(401)
-        .json({ message: 'Session revoked. Please log in again.' })
+      return res.status(401).json({
+        message: 'Session revoked. Please log in again.',
+        code: 'TOKEN_REVOKED',
+      })
     }
 
     req.user = user
     req.token = token
     return next()
   } catch (error) {
+    console.error('Auth middleware error:', error)
     return res.status(500).json({ message: 'Authentication error' })
   }
 }

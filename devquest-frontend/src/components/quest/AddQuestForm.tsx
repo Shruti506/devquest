@@ -43,12 +43,11 @@ export const AddQuestForm = ({ onSubmit, onCancel }: AddQuestFormProps) => {
 
       toast.success('Quest created successfully!')
 
-      // Reset form
       setTitle('')
       setDescription('')
       setDifficulty('Easy')
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Failed to create quest') 
+      toast.error(err instanceof Error ? err.message : 'Failed to create quest')
     } finally {
       setLoading(false)
     }

@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation'
 import { Card, CardContent, CardHeader, Typography } from '@mui/material'
 import RegisterForm from '@/components/forms/RegisterForm'
-import { isServerAuthenticated } from '@/lib/auth'
+import { isServerAuthenticated } from '@/lib/auth-server'
 
 export const metadata = {
   title: 'Register - Your App',

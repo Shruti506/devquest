@@ -1,6 +1,6 @@
 import { QuestList } from '@/components/quest/QuestList'
-import { decodeToken, getServerToken } from '@/lib/auth'
-
+import { decodeToken } from '@/lib/auth'
+import { getServerToken } from '@/lib/auth-server'
 
 const QuestPage = async () => {
   const token = await getServerToken()

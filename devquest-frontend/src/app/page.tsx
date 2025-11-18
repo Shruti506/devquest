@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation'
-import { isServerAuthenticated } from '@/lib/auth'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
+import { isServerAuthenticated } from '@/lib/auth-server'
 
 export default async function HomePage() {
   const authenticated = await isServerAuthenticated()

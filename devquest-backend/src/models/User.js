@@ -37,11 +37,30 @@ const UserSchema = new Schema(
   { timestamps: true },
 )
 
-UserSchema.methods.generateAuthToken = function generateAuthToken() {
+UserSchema.methods.generateAccessToken = function generateAccessToken() {
   const secret = process.env.JWT_SECRET
-  const expiresIn = process.env.JWT_EXPIRE || '7d'
-  const payload = { sub: this._id.toString(), tv: this.tokenVersion }
+  const expiresIn = process.env.JWT_EXPIRE || '15m'
+  const payload = {
+    sub: this._id.toString(),
+    tv: this.tokenVersion,
+    type: 'access',
+  }
   return jwt.sign(payload, secret, { expiresIn })
+}
+
+UserSchema.methods.generateRefreshToken = function generateRefreshToken() {
+  const secret = process.env.JWT_REFRESH_SECRET
+  const expiresIn = process.env.JWT_REFRESH_EXPIRE || '7d'
+  const payload = {
+    sub: this._id.toString(),
+    tv: this.tokenVersion,
+    type: 'refresh',
+  }
+  return jwt.sign(payload, secret, { expiresIn })
+}
+
+UserSchema.methods.generateAuthToken = function generateAuthToken() {
+  return this.generateAccessToken()
 }
 
 UserSchema.methods.comparePassword = async function comparePassword(
