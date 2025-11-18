@@ -43,7 +43,7 @@ export const MyQuestList = ({ userId, token }: MyQuestListProps) => {
     if (!token) return
 
     try {
-      await questApi.createQuest(token, data)
+      await questApi.createQuest(data, token)
       await refetch()
     } catch (err) {
       throw err
@@ -58,7 +58,7 @@ export const MyQuestList = ({ userId, token }: MyQuestListProps) => {
     if (!token || !deleteQuestId) return
 
     try {
-      await questApi.deleteQuest(token, deleteQuestId)
+      await questApi.deleteQuest(deleteQuestId, token)
       setDeleteQuestId(null)
 
       const data = await refetch()

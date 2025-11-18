@@ -3,7 +3,12 @@
 
 import { redirect } from 'next/navigation'
 import axios, { AxiosError } from 'axios'
-import { setServerToken, clearServerToken, getServerToken } from '@/lib/auth'
+import {
+  setServerToken,
+  setServerRefreshToken,
+  clearServerToken,
+  getServerToken,
+} from '@/lib/auth-server'
 import {
   LoginFormData,
   RegisterFormData,
@@ -19,6 +24,8 @@ interface ActionResult {
   success: boolean
   message?: string
   errors?: Record<string, string>
+  accessToken?: string
+  refreshToken?: string
 }
 
 export async function loginAction(
@@ -37,9 +44,16 @@ export async function loginAction(
       },
     )
 
-    await setServerToken(response.data.token)
+    // Store both tokens in httpOnly cookies
+    await setServerToken(response.data.accessToken)
+    await setServerRefreshToken(response.data.refreshToken)
 
-    return { success: true, message: 'Login successful' }
+    return {
+      success: true,
+      message: 'Login successful',
+      accessToken: response.data.accessToken,
+      refreshToken: response.data.refreshToken,
+    }
   } catch (error) {
     if (error instanceof Error && 'issues' in error) {
       const zodError = error as {
@@ -84,13 +98,18 @@ export async function registerAction(
       },
     )
 
-    // Store token in httpOnly cookie
-    await setServerToken(response.data.token)
+    // Store both tokens in httpOnly cookies
+    await setServerToken(response.data.accessToken)
+    await setServerRefreshToken(response.data.refreshToken)
 
-    return { success: true, message: 'Registration successful' }
+    return {
+      success: true,
+      message: 'Registration successful',
+      accessToken: response.data.accessToken,
+      refreshToken: response.data.refreshToken,
+    }
   } catch (error) {
     if (error instanceof Error && 'issues' in error) {
-      // Zod validation error
       const zodError = error as {
         issues: Array<{ path: string[]; message: string }>
       }
@@ -114,28 +133,73 @@ export async function registerAction(
   }
 }
 
+export async function refreshAccessToken(
+  refreshToken: string,
+): Promise<ActionResult> {
+  try {
+    const response = await axios.post<{ accessToken: string }>(
+      `${API_BASE_URL}/auth/refresh-token`,
+      { refreshToken },
+      {
+        headers: { 'Content-Type': 'application/json' },
+      },
+    )
+
+    // Store new access token
+    await setServerToken(response.data.accessToken)
+
+    return {
+      success: true,
+      accessToken: response.data.accessToken,
+    }
+  } catch (error) {
+    console.error('Token refresh error:', error)
+
+    if (axios.isAxiosError(error)) {
+      const axiosError = error as AxiosError<ApiError>
+      const errorMessage =
+        axiosError.response?.data?.message || 'Token refresh failed'
+
+      // If refresh token is invalid or expired, clear all tokens
+      if (axiosError.response?.status === 401) {
+        await clearServerToken()
+      }
+
+      return {
+        success: false,
+        message: errorMessage,
+      }
+    }
+    await clearServerToken()
+
+    return { success: false, message: 'Token refresh failed' }
+  }
+}
+
 export async function logoutAction(): Promise<void> {
   try {
     const token = await getServerToken()
 
-    if (!token) {
-      console.warn('No token found during logout')
-    }
-
-    await axios.post(
-      `${API_BASE_URL}/auth/logout`,
-      {},
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json',
+    if (token) {
+      await axios.post(
+        `${API_BASE_URL}/auth/logout`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
         },
-      },
-    )
+      )
+    }
   } catch (error) {
     console.error('Logout API error:', error)
   } finally {
     await clearServerToken()
     redirect('/login')
   }
+}
+
+export async function clearAllTokens(): Promise<void> {
+  await clearServerToken()
 }

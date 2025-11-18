@@ -1,7 +1,8 @@
 // src/app/quest/[id]/page.tsx
 import { redirect } from 'next/navigation'
-import { getServerToken, decodeToken } from '@/lib/auth'
+import { decodeToken } from '@/lib/auth'
 import { QuestDetail } from '@/components/quest/QuestDetail'
+import { getServerToken } from '@/lib/auth-server'
 
 interface QuestDetailPageProps {
   params: {

@@ -103,7 +103,7 @@ export const QuestDetail = ({ questId, token, userId }: QuestDetailProps) => {
 
     try {
       setLoading(true)
-      await questApi.completeQuest(token, questId)
+      await questApi.completeQuest(questId, token)
       setQuest((prev) =>
         prev
           ? { ...prev, completedBy: [...(prev.completedBy || []), userId!] }

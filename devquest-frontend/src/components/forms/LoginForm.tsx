@@ -10,8 +10,9 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { loginSchema, LoginFormData } from '@/lib/validations'
 import { loginAction } from '@/actions/auth.actions'
+import { setClientToken, setClientRefreshToken } from '@/lib/auth'
 import { Visibility, VisibilityOff } from '@mui/icons-material'
-import toast from 'react-hot-toast' 
+import toast from 'react-hot-toast'
 
 export default function LoginForm() {
   const router = useRouter()
@@ -36,7 +37,14 @@ export default function LoginForm() {
       const result = await loginAction(data)
 
       if (result.success) {
-        toast.success('Logged in successfully!') 
+        if (result.accessToken) {
+          setClientToken(result.accessToken)
+        }
+        if (result.refreshToken) {
+          setClientRefreshToken(result.refreshToken)
+        }
+
+        toast.success('Logged in successfully!')
         router.push('/dashboard')
         router.refresh()
       } else {

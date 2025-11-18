@@ -1,8 +1,8 @@
-// src/lib/auth.ts
-import { cookies } from 'next/headers'
 import { jwtDecode } from 'jwt-decode'
+import Cookies from 'js-cookie'
 
 const TOKEN_KEY = 'auth_token'
+const REFRESH_TOKEN_KEY = 'refresh_token'
 
 interface JWTPayload {
   exp: number
@@ -10,52 +10,50 @@ interface JWTPayload {
   userId?: string
   sub?: string
   email?: string
+  type?: string
 }
 
-// Client-side token management
-export const getToken = (): string | null => {
+export const getClientToken = (): string | null => {
   if (typeof window === 'undefined') return null
-  return localStorage.getItem(TOKEN_KEY)
+  return Cookies.get(TOKEN_KEY) || null
 }
 
-export const setToken = (token: string): void => {
+export const getClientRefreshToken = (): string | null => {
+  if (typeof window === 'undefined') return null
+  return Cookies.get(REFRESH_TOKEN_KEY) || null
+}
+
+export const setClientToken = (token: string): void => {
   if (typeof window === 'undefined') return
-  localStorage.setItem(TOKEN_KEY, token)
-}
-
-export const clearToken = (): void => {
-  if (typeof window === 'undefined') return
-  localStorage.removeItem(TOKEN_KEY)
-}
-
-// Server-side token management (for middleware and server components)
-export const getServerToken = async (): Promise<string | null> => {
-  const cookieStore = await cookies()
-  return cookieStore.get(TOKEN_KEY)?.value || null
-}
-
-export const setServerToken = async (token: string): Promise<void> => {
-  const cookieStore = await cookies()
-  cookieStore.set(TOKEN_KEY, token, {
-    httpOnly: true,
+  Cookies.set(TOKEN_KEY, token, {
+    expires: 1 / 96,
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'lax',
-    maxAge: 60 * 60 * 24 * 7, // 7 days
     path: '/',
   })
 }
 
-export const clearServerToken = async (): Promise<void> => {
-  const cookieStore = await cookies()
-  cookieStore.delete(TOKEN_KEY)
+export const setClientRefreshToken = (token: string): void => {
+  if (typeof window === 'undefined') return
+  Cookies.set(REFRESH_TOKEN_KEY, token, {
+    expires: 7,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+    path: '/',
+  })
 }
 
-// Token validation
+export const clearClientTokens = (): void => {
+  if (typeof window === 'undefined') return
+  Cookies.remove(TOKEN_KEY, { path: '/' })
+  Cookies.remove(REFRESH_TOKEN_KEY, { path: '/' })
+}
+
 export const isTokenValid = (token: string): boolean => {
   try {
     const decoded = jwtDecode<JWTPayload>(token)
     const currentTime = Date.now() / 1000
-    return decoded.exp > currentTime
+    return decoded.exp > currentTime + 30
   } catch {
     return false
   }
@@ -69,15 +67,8 @@ export const decodeToken = (token: string): JWTPayload | null => {
   }
 }
 
-// Check authentication status
-export const isAuthenticated = (): boolean => {
-  const token = getToken()
-  if (!token) return false
-  return isTokenValid(token)
-}
-
-export const isServerAuthenticated = async (): Promise<boolean> => {
-  const token = await getServerToken()
+export const isClientAuthenticated = (): boolean => {
+  const token = getClientToken()
   if (!token) return false
   return isTokenValid(token)
 }

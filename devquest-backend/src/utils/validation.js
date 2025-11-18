@@ -2,15 +2,14 @@ const { body, param, query } = require('express-validator')
 
 const registerValidators = [
   body('name').isString().trim().isLength({ min: 3 }),
-  body('email').isEmail().normalizeEmail(),
+  body('email').isEmail().trim(),
   body('password').isString().isLength({ min: 6 }),
 ]
 
 const loginValidators = [
-  body('email').isEmail().normalizeEmail(),
+  body('email').isEmail().trim(),
   body('password').isString().isLength({ min: 6 }),
 ]
-
 
 const createValidators = [
   body('title').isString().trim().notEmpty(),

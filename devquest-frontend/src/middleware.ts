@@ -1,27 +1,27 @@
 // src/middleware.ts
-import { NextResponse } from 'next/server'
-import type { NextRequest } from 'next/server'
-import { jwtDecode } from 'jwt-decode'
+import { NextResponse } from "next/server"
+import type { NextRequest } from "next/server"
+import { jwtDecode } from "jwt-decode"
 
 interface JWTPayload {
   exp: number
+  type?: string
 }
 
-const TOKEN_KEY = 'auth_token'
+const TOKEN_KEY = "auth_token"
+const REFRESH_TOKEN_KEY = "refresh_token"
 
-// Public routes that don't require authentication
-const publicRoutes = ['/login', '/register']
+const authRoutes = ["/login", "/register"]
 
-// Protected routes that require authentication
-const protectedRoutes = ['/dashboard']
-
-// Auth routes that authenticated users shouldn't access
-const authRoutes = ['/login', '/register']
+const protectedRoutes = ["/dashboard"]
 
 function isTokenValid(token: string): boolean {
   try {
     const decoded = jwtDecode<JWTPayload>(token)
     const currentTime = Date.now() / 1000
+
+    if (decoded.type !== "access") return false
+
     return decoded.exp > currentTime
   } catch {
     return false
@@ -31,34 +31,29 @@ function isTokenValid(token: string): boolean {
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
   const token = request.cookies.get(TOKEN_KEY)?.value
+  const refreshToken = request.cookies.get(REFRESH_TOKEN_KEY)?.value
 
   const isAuthenticated = token ? isTokenValid(token) : false
+  const hasRefreshToken = !!refreshToken
 
-  // Check if the current route is protected
   const isProtectedRoute = protectedRoutes.some((route) =>
     pathname.startsWith(route),
   )
 
-  // Check if the current route is an auth route
   const isAuthRoute = authRoutes.some((route) => pathname.startsWith(route))
 
-  // Redirect to login if accessing protected route without valid token
-  if (isProtectedRoute && !isAuthenticated) {
-    const loginUrl = new URL('/login', request.url)
-    loginUrl.searchParams.set('callbackUrl', pathname)
-    return NextResponse.redirect(loginUrl)
-  }
+  if (isProtectedRoute && !isAuthenticated && !hasRefreshToken) {
+    const loginUrl = new URL("/login", request.url)
+    loginUrl.searchParams.set("callbackUrl", pathname)
 
-  // Redirect to dashboard if accessing auth routes with valid token
-  if (isAuthRoute && isAuthenticated) {
-    return NextResponse.redirect(new URL('/dashboard', request.url))
-  }
-
-  // If token exists but is invalid, clear it
-  if (token && !isAuthenticated) {
-    const response = NextResponse.redirect(new URL('/login', request.url))
+    const response = NextResponse.redirect(loginUrl)
     response.cookies.delete(TOKEN_KEY)
+    response.cookies.delete(REFRESH_TOKEN_KEY)
     return response
+  }
+
+  if (isAuthRoute && isAuthenticated) {
+    return NextResponse.redirect(new URL("/dashboard", request.url))
   }
 
   return NextResponse.next()
@@ -73,6 +68,6 @@ export const config = {
      * - _next/image (image optimization files)
      * - favicon.ico (favicon file)
      */
-    '/((?!api|_next/static|_next/image|favicon.ico).*)',
+    "/((?!api|_next/static|_next/image|favicon.ico).*)",
   ],
 }

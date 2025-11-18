@@ -1,5 +1,6 @@
 import { MyQuestList } from '@/components/my-quest/MyQuestList'
-import { decodeToken, getServerToken } from '@/lib/auth'
+import { decodeToken } from '@/lib/auth'
+import { getServerToken } from '@/lib/auth-server'
 
 interface DecodedToken {
   sub: string

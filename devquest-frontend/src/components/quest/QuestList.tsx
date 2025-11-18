@@ -1,15 +1,13 @@
 'use client'
 
-import { useState } from 'react'
 import { useQuests } from '@/hooks/useQuests'
 import { CircularProgress } from '@mui/material'
-import { questApi } from '@/lib/quest-api'
 import { QuestFilters } from './QuestFilters'
 import { QuestCard } from './QuestCard'
 import { QuestPagination } from './QuestPagination'
-import { AddQuestModal } from './AddQuestModal'
 import { QuestHeader } from './QuestHeader'
 import toast from 'react-hot-toast'
+import { useEffect, useState } from 'react'
 
 interface QuestListProps {
   userId: string | undefined
@@ -18,7 +16,6 @@ interface QuestListProps {
 }
 
 export const QuestList = ({ userId, token, mode = 'all' }: QuestListProps) => {
-  const [isModalOpen, setIsModalOpen] = useState(false)
   const {
     quests,
     loading,
@@ -32,17 +29,21 @@ export const QuestList = ({ userId, token, mode = 'all' }: QuestListProps) => {
     refetch,
   } = useQuests({ userId, token, mode })
 
-  const handleCreateQuest = async (data: any) => {
-    if (!token) return
+  const [cookies, setCookies] = useState({})
 
-    try {
-      await questApi.createQuest(token, data)
-      await refetch()
-      toast.success('Quest created successfully!')
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Failed to create quest')
-    }
-  }
+  useEffect(() => {
+    const cookieString = document.cookie
+    const parsedCookies: Record<string, string> = {}
+
+    cookieString.split(';').forEach((cookie) => {
+      const parts = cookie.split('=')
+      const name = decodeURIComponent(parts[0].trim())
+      const value = decodeURIComponent(parts.slice(1).join('='))
+      parsedCookies[name] = value
+    })
+
+    setCookies(parsedCookies)
+  }, [])
 
   if (loading && quests.length === 0) {
     return (
@@ -63,7 +64,6 @@ export const QuestList = ({ userId, token, mode = 'all' }: QuestListProps) => {
       </div>
 
       <div className="max-w-6xl mx-auto px-4 py-8">
-
         <QuestFilters activeFilter={filter} onFilterChange={setFilter} />
 
         {loading ? (
@@ -117,12 +117,6 @@ export const QuestList = ({ userId, token, mode = 'all' }: QuestListProps) => {
             </div>
           </>
         )}
-
-        <AddQuestModal
-          open={isModalOpen}
-          onClose={() => setIsModalOpen(false)}
-          onSubmit={handleCreateQuest}
-        />
       </div>
     </div>
   )
