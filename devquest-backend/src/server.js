@@ -13,7 +13,7 @@ const { seedInitialBadges } = require("./services/badgeService")
 
 dotenv.config()
 const app = express()
-
+const PORT = process.env.PORT || 4000;
 app.use(
   cors({
     origin: "*",
@@ -45,7 +45,7 @@ mongoose
   .then(async () => {
     await seedInitialBadges()
 
-    app.listen(process.env.PORT, () => {
+    app.listen(PORT, () => {
       console.log("connected to db listening on port", process.env.PORT)
     })
   })
