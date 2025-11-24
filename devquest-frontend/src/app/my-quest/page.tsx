@@ -7,7 +7,7 @@ import { generatePageMetadata } from "@/lib/seo.config";
 export const metadata = generatePageMetadata({
   title: "My Quests",
   description: "View and manage your personal coding quests.",
-  path: "/my-quests",
+  path: "/my-quest",
   keywords: ["my quests", "personal challenges", "quest management"],
 });
 

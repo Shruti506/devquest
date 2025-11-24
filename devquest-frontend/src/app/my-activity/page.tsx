@@ -7,7 +7,7 @@ import { generatePageMetadata } from "@/lib/seo.config";
 export const metadata = generatePageMetadata({
   title: "Activity Log",
   description: "Track your coding quests, achievements, and milestones.",
-  path: "/activity",
+  path: "/my-activity",
   keywords: ["activity log", "progress tracking", "achievements"],
 });
 

@@ -11,8 +11,8 @@ interface QuestDetailPageProps {
 
 export async function generateMetadata({ params }: QuestDetailPageProps) {
   return generatePageMetadata({
-    title: `Quest ${params.id}`,
-    description: `View details and track progress for quest ${params.id}.`,
+    title: `Quest`,
+    description: `View details and track progress for quest.`,
     path: `/quest/${params.id}`,
     keywords: ["quest details", "coding challenge"],
   });
