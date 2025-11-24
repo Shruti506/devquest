@@ -1,16 +1,20 @@
-import { redirect } from 'next/navigation'
-import { Card, CardContent, CardHeader, Typography } from '@mui/material'
-import RegisterForm from '@/components/forms/RegisterForm'
-import { isServerAuthenticated } from '@/lib/auth-server'
+// app/register/page.tsx
+import { redirect } from "next/navigation";
+import { Card, CardContent, CardHeader, Typography } from "@mui/material";
+import RegisterForm from "@/components/forms/RegisterForm";
+import { isServerAuthenticated } from "@/lib/auth-server";
+import { generatePageMetadata } from "@/lib/seo.config";
 
-export const metadata = {
-  title: 'Register - Your App',
-  description: 'Create a new account',
-}
+export const metadata = generatePageMetadata({
+  title: "Register",
+  description: "Create a DevQuest account to start your coding adventure.",
+  path: "/register",
+  keywords: ["register", "sign up", "create account"],
+});
 
 export default async function RegisterPage() {
-  const authenticated = await isServerAuthenticated()
-  if (authenticated) redirect('/dashboard')
+  const authenticated = await isServerAuthenticated();
+  if (authenticated) redirect("/dashboard");
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
@@ -32,5 +36,5 @@ export default async function RegisterPage() {
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }
