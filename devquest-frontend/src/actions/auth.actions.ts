@@ -17,8 +17,37 @@ import {
 } from '@/lib/validations'
 import { AuthResponse, ApiError } from '@/types/auth'
 
-const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api'
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api'
+
+async function postWithRetries<T = any>(
+  url: string,
+  data: any,
+  retries = 2,
+  timeout = 5000,
+): Promise<import('axios').AxiosResponse<T>> {
+  let attempt = 0
+  const axiosConfig = { headers: { 'Content-Type': 'application/json' }, timeout }
+
+  while (attempt <= retries) {
+    try {
+      return await axios.post<T>(url, data, axiosConfig)
+    } catch (err) {
+      // Retry on server errors (5xx)
+      if (axios.isAxiosError(err)) {
+        const status = err.response?.status
+        if (status && status >= 500 && status < 600 && attempt < retries) {
+          attempt += 1
+          // exponential backoff
+          await new Promise((res) => setTimeout(res, 300 * attempt))
+          continue
+        }
+      }
+      throw err
+    }
+  }
+  // Shouldn't reach here, but throw to satisfy types
+  throw new Error('Request failed after retries')
+}
 
 interface ActionResult {
   success: boolean
@@ -35,14 +64,12 @@ export async function loginAction(
     // Validate input
     const validatedData = loginSchema.parse(formData)
 
-    // Call API
-    const response = await axios.post<AuthResponse>(
+    // Call API (with retries for transient server errors)
+    const response = await postWithRetries<AuthResponse>(
       `${API_BASE_URL}/auth/login`,
       validatedData,
-      {
-        headers: { 'Content-Type': 'application/json' },
-      },
     )
+    console.log("🚀 ~ loginAction ~ response:", response)
 
     // Store both tokens in httpOnly cookies
     await setServerToken(response.data.accessToken)
@@ -55,6 +82,7 @@ export async function loginAction(
       refreshToken: response.data.refreshToken,
     }
   } catch (error) {
+    console.log("🚀 ~ loginAction ~ error:", error)
     if (error instanceof Error && 'issues' in error) {
       const zodError = error as {
         issues: Array<{ path: string[]; message: string }>
